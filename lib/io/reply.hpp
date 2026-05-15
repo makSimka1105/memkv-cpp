@@ -1,0 +1,68 @@
+#pragma once
+
+#include <concepts>
+#include <cstdint>
+#include <memory>
+#include <string>
+#include <utility>
+#include <variant>
+#include <vector>
+
+namespace valkey::io {
+
+struct SimpleStr {
+    std::string value;
+};
+
+struct BulkStr {
+    std::string value;
+};
+
+struct Int {
+    int64_t value;
+};
+
+struct Err {
+    std::string message;
+};
+
+struct Nil {};
+
+struct Array;
+
+using Reply = std::variant<SimpleStr, BulkStr, Int, Err, Nil, std::unique_ptr<Array>>;
+
+struct Array {
+    std::vector<Reply> items;
+};
+
+Reply Ok() {
+    return SimpleStr{"OK"};
+}
+
+Reply MakeNil() {
+    return Nil{};
+}
+
+Reply MakeInt(int64_t v) {
+    return Int{v};
+}
+
+Reply MakeBulk(std::string v) {
+    return BulkStr{std::move(v)};
+}
+
+Reply MakeErr(std::string m) {
+    return Err{std::move(m)};
+}
+
+Reply MakeArray(std::vector<Reply> xs) {
+    return std::make_unique<Array>(Array{std::move(xs)});
+}
+
+template <typename W>
+concept Replyable = requires(W& w, const Reply& r) {
+    { Write(w, r) } -> std::same_as<void>;
+};
+
+}  // namespace valkey::io
