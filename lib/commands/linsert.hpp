@@ -75,6 +75,9 @@ io::Reply Exec(engine::Engine& e, const parser::Cmd& c) {
     return io::MakeInt(result);
 }
 
-constexpr parser::CommandEntry kEntry{"LINSERT", {4, 4}, &Build, &Exec};
+struct Trait {
+    using Node = cmd_nodes::LInsert;
+    static constexpr parser::CommandEntry kEntry{"LINSERT", {4, 4}, &Build, &Exec};
+};
 
 }  // namespace valkey::commands::linsert

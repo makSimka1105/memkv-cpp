@@ -5,14 +5,17 @@
 #include <cstdint>
 #include <string>
 #include <string_view>
+#include <type_traits>
 #include <utility>
 #include <variant>
 #include <vector>
 
 #include "engine/config.hpp"
 #include "engine/memory_tracker.hpp"
+#include "meta/type_list.hpp"
 #include "storage/storage.hpp"
 #include "storage/value.hpp"
+#include "stored_types/all.hpp"
 
 namespace valkey::engine {
 
@@ -75,16 +78,12 @@ public:
         if (v == nullptr) {
             return "none";
         }
-        if (std::get_if<storage::String>(v)) {
-            return "string";
-        }
-        if (std::get_if<storage::List>(v)) {
-            return "list";
-        }
-        if (std::get_if<storage::Set>(v)) {
-            return "set";
-        }
-        return "unknown";
+        return std::visit(
+            [](const auto& val) -> std::string_view {
+                using T = std::decay_t<decltype(val)>;
+                return meta::TraitFor<T, stored_types::AllTypes>::kName;
+            },
+            *v);
     }
 
     std::vector<std::string> Keys(std::string_view pattern) { return storage_.Keys(pattern); }
@@ -161,7 +160,8 @@ private:
         if (v == nullptr) {
             return 0;
         }
-        return StringBytes(key) + SizeOf(*v);
+        return StringBytes(key) +
+               std::visit([](const auto& val) { return engine::SizeOf(val); }, *v);
     }
 
     Config cfg_;

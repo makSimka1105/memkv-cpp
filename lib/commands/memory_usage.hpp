@@ -42,6 +42,9 @@ io::Reply Exec(engine::Engine& e, const parser::Cmd& c) {
     return io::MakeInt(bytes);
 }
 
-constexpr parser::CommandEntry kEntry{"MEMORY", {2, 2}, &Build, &Exec};
+struct Trait {
+    using Node = cmd_nodes::Memory;
+    static constexpr parser::CommandEntry kEntry{"MEMORY", {2, 2}, &Build, &Exec};
+};
 
 }  // namespace valkey::commands::memory_usage

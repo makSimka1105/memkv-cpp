@@ -1,13 +1,14 @@
 #pragma once
 
 #include <algorithm>
+#include <cstddef>
 #include <cstdint>
 #include <expected>
 #include <optional>
 #include <span>
 #include <string>
+#include <string_view>
 #include <utility>
-#include <variant>
 #include <vector>
 
 #include "engine/engine.hpp"
@@ -70,6 +71,9 @@ io::Reply Exec(engine::Engine& e, const parser::Cmd& c) {
     return io::MakeArray(std::move(items));
 }
 
-constexpr parser::CommandEntry kEntry{"RPOP", {1, 2}, &Build, &Exec};
+struct Trait {
+    using Node = cmd_nodes::RPop;
+    static constexpr parser::CommandEntry kEntry{"RPOP", {1, 2}, &Build, &Exec};
+};
 
 }  // namespace valkey::commands::rpop

@@ -50,6 +50,9 @@ io::Reply Exec(engine::Engine& e, const parser::Cmd& c) {
     return io::MakeBulk((*lst)[index]);
 }
 
-constexpr parser::CommandEntry kEntry{"LINDEX", {2, 2}, &Build, &Exec};
+struct Trait {
+    using Node = cmd_nodes::LIndex;
+    static constexpr parser::CommandEntry kEntry{"LINDEX", {2, 2}, &Build, &Exec};
+};
 
 }  // namespace valkey::commands::lindex

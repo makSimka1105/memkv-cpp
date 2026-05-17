@@ -41,6 +41,9 @@ io::Reply Exec(engine::Engine& e, const parser::Cmd& c) {
     return io::MakeInt(s->contains(x.member) ? 1 : 0);
 }
 
-constexpr parser::CommandEntry kEntry{"SISMEMBER", {2, 2}, &Build, &Exec};
+struct Trait {
+    using Node = cmd_nodes::SIsMember;
+    static constexpr parser::CommandEntry kEntry{"SISMEMBER", {2, 2}, &Build, &Exec};
+};
 
 }  // namespace valkey::commands::sismember

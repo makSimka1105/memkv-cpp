@@ -44,6 +44,9 @@ io::Reply Exec(engine::Engine& e, const parser::Cmd& c) {
     return io::MakeInt(removed);
 }
 
-constexpr parser::CommandEntry kEntry{"SREM", {2, parser::kUnbounded}, &Build, &Exec};
+struct Trait {
+    using Node = cmd_nodes::SRem;
+    static constexpr parser::CommandEntry kEntry{"SREM", {2, parser::kUnbounded}, &Build, &Exec};
+};
 
 }  // namespace valkey::commands::srem

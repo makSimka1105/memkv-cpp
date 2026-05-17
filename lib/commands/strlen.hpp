@@ -38,6 +38,9 @@ io::Reply Exec(engine::Engine& e, const parser::Cmd& c) {
     return io::MakeInt(s->size());
 }
 
-constexpr parser::CommandEntry kEntry{"STRLEN", {1, 1}, &Build, &Exec};
+struct Trait {
+    using Node = cmd_nodes::Strlen;
+    static constexpr parser::CommandEntry kEntry{"STRLEN", {1, 1}, &Build, &Exec};
+};
 
 }  // namespace valkey::commands::strlen

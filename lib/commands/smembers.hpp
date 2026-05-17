@@ -43,6 +43,9 @@ io::Reply Exec(engine::Engine& e, const parser::Cmd& c) {
     return io::MakeArray(std::move(items));
 }
 
-constexpr parser::CommandEntry kEntry{"SMEMBERS", {1, 1}, &Build, &Exec};
+struct Trait {
+    using Node = cmd_nodes::SMembers;
+    static constexpr parser::CommandEntry kEntry{"SMEMBERS", {1, 1}, &Build, &Exec};
+};
 
 }  // namespace valkey::commands::smembers

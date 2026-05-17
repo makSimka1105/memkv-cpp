@@ -35,6 +35,9 @@ io::Reply Exec(engine::Engine& e, const parser::Cmd& c) {
     return io::MakeInt(count);
 }
 
-constexpr parser::CommandEntry kEntry{"EXISTS", {1, parser::kUnbounded}, &Build, &Exec};
+struct Trait {
+    using Node = cmd_nodes::Exists;
+    static constexpr parser::CommandEntry kEntry{"EXISTS", {1, parser::kUnbounded}, &Build, &Exec};
+};
 
 }  // namespace valkey::commands::exists

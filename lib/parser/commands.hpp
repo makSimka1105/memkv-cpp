@@ -3,6 +3,7 @@
 #include <cstdint>
 #include <optional>
 #include <string>
+#include <utility>
 #include <variant>
 #include <vector>
 
@@ -155,6 +156,49 @@ struct Memory {
     std::string key;
 };
 
+struct ZAdd {
+    std::string key;
+    std::vector<std::pair<double, std::string>> entries;
+};
+
+struct ZRem {
+    std::string key;
+    std::vector<std::string> members;
+};
+
+struct ZScore {
+    std::string key;
+    std::string member;
+};
+
+struct ZCard {
+    std::string key;
+};
+
+struct ZRank {
+    std::string key;
+    std::string member;
+};
+
+struct ZRange {
+    std::string key;
+    int64_t start;
+    int64_t stop;
+    bool with_scores;
+};
+
+struct ZRangeByScore {
+    std::string key;
+    double min_s;
+    double max_s;
+};
+
+struct ZIncrBy {
+    std::string key;
+    double delta;
+    std::string member;
+};
+
 }  // namespace valkey::cmd_nodes
 
 namespace valkey::parser {
@@ -167,6 +211,8 @@ using Cmd =
                  cmd_nodes::LInsert, cmd_nodes::SAdd, cmd_nodes::SRem, cmd_nodes::SIsMember,
                  cmd_nodes::SMembers, cmd_nodes::SCard, cmd_nodes::SUnion, cmd_nodes::SInter,
                  cmd_nodes::SDiff, cmd_nodes::SMove, cmd_nodes::Type, cmd_nodes::Keys,
-                 cmd_nodes::FlushDb, cmd_nodes::Config, cmd_nodes::DBSize, cmd_nodes::Memory>;
+                 cmd_nodes::FlushDb, cmd_nodes::Config, cmd_nodes::DBSize, cmd_nodes::Memory,
+                 cmd_nodes::ZAdd, cmd_nodes::ZRem, cmd_nodes::ZScore, cmd_nodes::ZCard,
+                 cmd_nodes::ZRank, cmd_nodes::ZRange, cmd_nodes::ZRangeByScore, cmd_nodes::ZIncrBy>;
 
 }  // namespace valkey::parser

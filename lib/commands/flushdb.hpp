@@ -23,6 +23,9 @@ io::Reply Exec(engine::Engine& e, const parser::Cmd& /*c*/) {
     return io::Ok();
 }
 
-constexpr parser::CommandEntry kEntry{"FLUSHDB", {0, 0}, &Build, &Exec};
+struct Trait {
+    using Node = cmd_nodes::FlushDb;
+    static constexpr parser::CommandEntry kEntry{"FLUSHDB", {0, 0}, &Build, &Exec};
+};
 
 }  // namespace valkey::commands::flushdb

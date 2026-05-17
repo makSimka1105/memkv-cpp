@@ -23,6 +23,9 @@ io::Reply Exec(engine::Engine& e, const parser::Cmd& /*c*/) {
     return io::MakeInt(static_cast<int64_t>(e.DbSize()));
 }
 
-constexpr parser::CommandEntry kEntry{"DBSIZE", {0, 0}, &Build, &Exec};
+struct Trait {
+    using Node = cmd_nodes::DBSize;
+    static constexpr parser::CommandEntry kEntry{"DBSIZE", {0, 0}, &Build, &Exec};
+};
 
 }  // namespace valkey::commands::dbsize

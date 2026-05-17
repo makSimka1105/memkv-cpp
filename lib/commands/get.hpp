@@ -37,6 +37,9 @@ io::Reply Exec(engine::Engine& e, const parser::Cmd& c) {
     return io::MakeBulk(*s);
 }
 
-constexpr parser::CommandEntry kEntry{"GET", {1, 1}, &Build, &Exec};
+struct Trait {
+    using Node = cmd_nodes::Get;
+    static constexpr parser::CommandEntry kEntry{"GET", {1, 1}, &Build, &Exec};
+};
 
 }  // namespace valkey::commands::get

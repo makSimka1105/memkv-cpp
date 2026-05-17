@@ -28,6 +28,9 @@ io::Reply Exec(engine::Engine& e, const parser::Cmd& c) {
     return io::MakeInt(e.TtlSeconds(x.key));
 }
 
-constexpr parser::CommandEntry kEntry{"TTL", {1, 1}, &Build, &Exec};
+struct Trait {
+    using Node = cmd_nodes::Ttl;
+    static constexpr parser::CommandEntry kEntry{"TTL", {1, 1}, &Build, &Exec};
+};
 
 }  // namespace valkey::commands::ttl

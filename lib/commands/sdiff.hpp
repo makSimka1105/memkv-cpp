@@ -60,6 +60,9 @@ io::Reply Exec(engine::Engine& e, const parser::Cmd& c) {
     return io::MakeArray(std::move(items));
 }
 
-constexpr parser::CommandEntry kEntry{"SDIFF", {1, parser::kUnbounded}, &Build, &Exec};
+struct Trait {
+    using Node = cmd_nodes::SDiff;
+    static constexpr parser::CommandEntry kEntry{"SDIFF", {1, parser::kUnbounded}, &Build, &Exec};
+};
 
 }  // namespace valkey::commands::sdiff

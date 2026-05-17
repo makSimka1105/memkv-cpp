@@ -36,6 +36,9 @@ io::Reply Exec(engine::Engine& e, const parser::Cmd& c) {
     return io::Ok();
 }
 
-constexpr parser::CommandEntry kEntry{"SET", {2, 2}, &Build, &Exec};
+struct Trait {
+    using Node = cmd_nodes::Set;
+    static constexpr parser::CommandEntry kEntry{"SET", {2, 2}, &Build, &Exec};
+};
 
 }  // namespace valkey::commands::set

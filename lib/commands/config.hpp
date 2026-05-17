@@ -63,6 +63,9 @@ io::Reply Exec(engine::Engine& e, const parser::Cmd& c) {
     return io::Ok();
 }
 
-constexpr parser::CommandEntry kEntry{"CONFIG", {2, 3}, &Build, &Exec};
+struct Trait {
+    using Node = cmd_nodes::Config;
+    static constexpr parser::CommandEntry kEntry{"CONFIG", {2, 3}, &Build, &Exec};
+};
 
 }  // namespace valkey::commands::config

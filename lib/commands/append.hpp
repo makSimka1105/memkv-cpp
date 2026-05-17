@@ -48,6 +48,9 @@ io::Reply Exec(engine::Engine& e, const parser::Cmd& c) {
     return engine::WrongTypeReply();
 }
 
-constexpr parser::CommandEntry kEntry{"APPEND", {2, 2}, &Build, &Exec};
+struct Trait {
+    using Node = cmd_nodes::Append;
+    static constexpr parser::CommandEntry kEntry{"APPEND", {2, 2}, &Build, &Exec};
+};
 
 }  // namespace valkey::commands::append

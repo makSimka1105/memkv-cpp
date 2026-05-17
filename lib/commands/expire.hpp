@@ -34,6 +34,9 @@ io::Reply Exec(engine::Engine& e, const parser::Cmd& c) {
     return io::MakeInt(ok ? 1 : 0);
 }
 
-constexpr parser::CommandEntry kEntry{"EXPIRE", {2, 2}, &Build, &Exec};
+struct Trait {
+    using Node = cmd_nodes::Expire;
+    static constexpr parser::CommandEntry kEntry{"EXPIRE", {2, 2}, &Build, &Exec};
+};
 
 }  // namespace valkey::commands::expire

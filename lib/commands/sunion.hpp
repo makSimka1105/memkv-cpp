@@ -48,6 +48,9 @@ io::Reply Exec(engine::Engine& e, const parser::Cmd& c) {
     return io::MakeArray(std::move(items));
 }
 
-constexpr parser::CommandEntry kEntry{"SUNION", {1, parser::kUnbounded}, &Build, &Exec};
+struct Trait {
+    using Node = cmd_nodes::SUnion;
+    static constexpr parser::CommandEntry kEntry{"SUNION", {1, parser::kUnbounded}, &Build, &Exec};
+};
 
 }  // namespace valkey::commands::sunion

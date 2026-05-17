@@ -51,6 +51,9 @@ io::Reply Exec(engine::Engine& e, const parser::Cmd& c) {
     return engine::WrongTypeReply();
 }
 
-constexpr parser::CommandEntry kEntry{"SADD", {2, parser::kUnbounded}, &Build, &Exec};
+struct Trait {
+    using Node = cmd_nodes::SAdd;
+    static constexpr parser::CommandEntry kEntry{"SADD", {2, parser::kUnbounded}, &Build, &Exec};
+};
 
 }  // namespace valkey::commands::sadd

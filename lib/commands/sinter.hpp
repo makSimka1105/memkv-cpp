@@ -1,11 +1,11 @@
 #pragma once
 
+#include <cstddef>
 #include <expected>
 #include <span>
 #include <string>
 #include <unordered_set>
 #include <utility>
-#include <variant>
 #include <vector>
 
 #include "engine/engine.hpp"
@@ -67,6 +67,9 @@ io::Reply Exec(engine::Engine& e, const parser::Cmd& c) {
     return io::MakeArray(std::move(items));
 }
 
-constexpr parser::CommandEntry kEntry{"SINTER", {1, parser::kUnbounded}, &Build, &Exec};
+struct Trait {
+    using Node = cmd_nodes::SInter;
+    static constexpr parser::CommandEntry kEntry{"SINTER", {1, parser::kUnbounded}, &Build, &Exec};
+};
 
 }  // namespace valkey::commands::sinter

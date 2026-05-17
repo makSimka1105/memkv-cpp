@@ -52,6 +52,20 @@ std::expected<int64_t, ParseError> TokenToInt(const Token& tok, size_t idx) {
         tok);
 }
 
+std::expected<double, ParseError> TokenToFloat(const Token& tok, size_t idx) {
+    return std::visit(
+        meta::Overload{
+            [](const TkFloat& f) -> std::expected<double, ParseError> { return f.value; },
+            [](const TkInt& i) -> std::expected<double, ParseError> {
+                return static_cast<double>(i.value);
+            },
+            [idx](const auto&) -> std::expected<double, ParseError> {
+                return std::unexpected(ParseError{"expected number", idx});
+            },
+        },
+        tok);
+}
+
 std::expected<std::vector<std::string>, ParseError> CollectStrings(std::span<const Token> args,
                                                                    size_t base_index) {
     std::vector<std::string> out;

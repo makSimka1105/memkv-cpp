@@ -34,4 +34,13 @@ target_sources(valkey_core
         ${CMAKE_CURRENT_SOURCE_DIR}/config.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/dbsize.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/memory_usage.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/zadd.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/zrem.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/zscore.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/zcard.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/zrank.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/zrange.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/zrangebyscore.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/zincrby.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/all.hpp
 )

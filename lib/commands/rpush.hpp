@@ -50,6 +50,9 @@ io::Reply Exec(engine::Engine& e, const parser::Cmd& c) {
     return engine::WrongTypeReply();
 }
 
-constexpr parser::CommandEntry kEntry{"RPUSH", {2, parser::kUnbounded}, &Build, &Exec};
+struct Trait {
+    using Node = cmd_nodes::RPush;
+    static constexpr parser::CommandEntry kEntry{"RPUSH", {2, parser::kUnbounded}, &Build, &Exec};
+};
 
 }  // namespace valkey::commands::rpush

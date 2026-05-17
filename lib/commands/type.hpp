@@ -29,6 +29,9 @@ io::Reply Exec(engine::Engine& e, const parser::Cmd& c) {
     return io::SimpleStr{std::string(e.TypeOf(x.key))};
 }
 
-constexpr parser::CommandEntry kEntry{"TYPE", {1, 1}, &Build, &Exec};
+struct Trait {
+    using Node = cmd_nodes::Type;
+    static constexpr parser::CommandEntry kEntry{"TYPE", {1, 1}, &Build, &Exec};
+};
 
 }  // namespace valkey::commands::type

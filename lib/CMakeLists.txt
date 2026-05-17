@@ -9,6 +9,8 @@ target_sources(valkey_core
 )
 
 add_subdirectory(meta)
+add_subdirectory(structures)
+add_subdirectory(stored_types)
 add_subdirectory(storage)
 add_subdirectory(engine)
 add_subdirectory(parser)

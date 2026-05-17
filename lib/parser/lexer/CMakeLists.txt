@@ -8,4 +8,7 @@ target_sources(valkey_core
         ${CMAKE_CURRENT_SOURCE_DIR}/utils.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/quoted_string.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/whitespace.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/word_handler.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/int_handler.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/float_handler.hpp
 )

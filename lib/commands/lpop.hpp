@@ -70,6 +70,9 @@ io::Reply Exec(engine::Engine& e, const parser::Cmd& c) {
     return io::MakeArray(std::move(items));
 }
 
-constexpr parser::CommandEntry kEntry{"LPOP", {1, 2}, &Build, &Exec};
+struct Trait {
+    using Node = cmd_nodes::LPop;
+    static constexpr parser::CommandEntry kEntry{"LPOP", {1, 2}, &Build, &Exec};
+};
 
 }  // namespace valkey::commands::lpop

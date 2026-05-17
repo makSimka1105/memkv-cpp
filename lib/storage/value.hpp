@@ -5,7 +5,9 @@
 #include <deque>
 #include <string>
 #include <unordered_set>
-#include <variant>
+
+#include "meta/type_list.hpp"
+#include "stored_types/all.hpp"
 
 namespace valkey::storage {
 
@@ -13,7 +15,7 @@ using String = std::string;
 using List = std::deque<std::string>;
 using Set = std::unordered_set<std::string>;
 
-using ValueVar = std::variant<String, List, Set>;
+using ValueVar = meta::VariantFromList<stored_types::AllTypes>;
 
 template <typename T>
 concept Stringy = requires(const T& v) {

@@ -6,11 +6,14 @@
 #include <span>
 #include <string_view>
 
-#include "engine/engine.hpp"
 #include "io/reply.hpp"
 #include "parser/commands.hpp"
 #include "parser/lexer/types.hpp"
 #include "parser/token_extract.hpp"
+
+namespace valkey::engine {
+class Engine;
+}  // namespace valkey::engine
 
 namespace valkey::parser {
 

@@ -58,6 +58,9 @@ io::Reply Exec(engine::Engine& e, const parser::Cmd& c) {
     return io::Ok();
 }
 
-constexpr parser::CommandEntry kEntry{"LSET", {3, 3}, &Build, &Exec};
+struct Trait {
+    using Node = cmd_nodes::LSet;
+    static constexpr parser::CommandEntry kEntry{"LSET", {3, 3}, &Build, &Exec};
+};
 
 }  // namespace valkey::commands::lset
