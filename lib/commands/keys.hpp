@@ -3,19 +3,25 @@
 #include <expected>
 #include <span>
 #include <utility>
-#include <variant>
 #include <vector>
 
 #include "engine/engine.hpp"
 #include "io/reply.hpp"
-#include "parser/commands.hpp"
+#include "meta/command_trait.hpp"
 #include "parser/lexer/types.hpp"
-#include "parser/registry_types.hpp"
 #include "parser/token_extract.hpp"
+
+namespace valkey::cmd_nodes {
+
+struct Keys {
+    std::string pattern;
+};
+
+}  // namespace valkey::cmd_nodes
 
 namespace valkey::commands::keys {
 
-std::expected<parser::Cmd, parser::ParseError> Build(
+inline std::expected<cmd_nodes::Keys, parser::ParseError> Build(
     std::span<const parser::Token> args) {
     auto pattern = parser::TokenToString(args[0], 1);
     if (!pattern) {
@@ -24,8 +30,7 @@ std::expected<parser::Cmd, parser::ParseError> Build(
     return cmd_nodes::Keys{std::move(*pattern)};
 }
 
-io::Reply Exec(engine::Engine& e, const parser::Cmd& c) {
-    const auto& x = std::get<cmd_nodes::Keys>(c);
+inline io::Reply Exec(engine::Engine& e, const cmd_nodes::Keys& x) {
     auto matched = e.Keys(x.pattern);
     std::vector<io::Reply> items;
     items.reserve(matched.size());
@@ -35,9 +40,6 @@ io::Reply Exec(engine::Engine& e, const parser::Cmd& c) {
     return io::MakeArray(std::move(items));
 }
 
-struct Trait {
-    using Node = cmd_nodes::Keys;
-    static constexpr parser::CommandEntry kEntry{"KEYS", {1, 1}, &Build, &Exec};
-};
+using Trait = meta::CommandTrait<cmd_nodes::Keys, "KEYS", {1, 1}, &Build, &Exec>;
 
 }  // namespace valkey::commands::keys

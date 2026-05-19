@@ -2,8 +2,6 @@
 
 namespace valkey::meta {
 
-
-
 template <class... Ts>
 struct Overload : Ts... {
     using Ts::operator()...;
@@ -11,9 +9,6 @@ struct Overload : Ts... {
 
 template <typename... Ts>
 Overload(Ts...) -> Overload<Ts...>;
-
-
-
 
 
 

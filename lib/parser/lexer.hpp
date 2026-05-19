@@ -53,15 +53,21 @@ private:
     std::unique_ptr<IHandler> chain_;
 };
 
-std::expected<std::vector<Token>, LexError> Tokenize(std::string_view input) {
-    Lexer lexer{ChainBuilder{}
+
+
+auto BuildDefaultLexerChain(){
+    return Lexer{ChainBuilder{}
                     .Add<WhitespaceHandler>()
                     .Add<QuotedStringHandler>()
                     .Add<IntHandler>()
                     .Add<FloatHandler>()
                     .Add<WordHandler>()
                     .Build()};
-    return lexer(input);
+}
+
+std::expected<std::vector<Token>, LexError> Tokenize(std::string_view input) {
+
+    return BuildDefaultLexerChain()(input);
 }
 
 }  // namespace valkey::parser

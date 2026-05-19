@@ -3,21 +3,28 @@
 #include <cstdint>
 #include <expected>
 #include <span>
+#include <unordered_set>
 #include <utility>
-#include <variant>
 
 #include "engine/engine.hpp"
 #include "engine/replies.hpp"
 #include "io/reply.hpp"
-#include "parser/commands.hpp"
+#include "meta/command_trait.hpp"
 #include "parser/lexer/types.hpp"
-#include "parser/registry_types.hpp"
 #include "parser/token_extract.hpp"
-#include "storage/value.hpp"
+
+namespace valkey::cmd_nodes {
+
+struct SRem {
+    std::string key;
+    std::vector<std::string> members;
+};
+
+}  // namespace valkey::cmd_nodes
 
 namespace valkey::commands::srem {
 
-std::expected<parser::Cmd, parser::ParseError> Build(
+inline std::expected<cmd_nodes::SRem, parser::ParseError> Build(
     std::span<const parser::Token> args) {
     auto k = parser::TokenToString(args[0], 1);
     if (!k) {
@@ -30,10 +37,9 @@ std::expected<parser::Cmd, parser::ParseError> Build(
     return cmd_nodes::SRem{std::move(*k), std::move(*members)};
 }
 
-io::Reply Exec(engine::Engine& e, const parser::Cmd& c) {
-    const auto& x = std::get<cmd_nodes::SRem>(c);
+inline io::Reply Exec(engine::Engine& e, const cmd_nodes::SRem& x) {
     int64_t removed = 0;
-    auto st = e.Mutate<storage::Set>(x.key, [&](storage::Set& s) {
+    auto st = e.Mutate<std::unordered_set<std::string>>(x.key, [&](std::unordered_set<std::string>& s) {
         for (const auto& m : x.members) {
             removed += static_cast<int64_t>(s.erase(m));
         }
@@ -44,9 +50,6 @@ io::Reply Exec(engine::Engine& e, const parser::Cmd& c) {
     return io::MakeInt(removed);
 }
 
-struct Trait {
-    using Node = cmd_nodes::SRem;
-    static constexpr parser::CommandEntry kEntry{"SREM", {2, parser::kUnbounded}, &Build, &Exec};
-};
+using Trait = meta::CommandTrait<cmd_nodes::SRem, "SREM", {2, parser::kUnbounded}, &Build, &Exec>;
 
 }  // namespace valkey::commands::srem

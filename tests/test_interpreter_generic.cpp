@@ -1,9 +1,15 @@
 #include <gtest/gtest.h>
 
+#include "commands/dbsize.hpp"
+#include "commands/flushdb.hpp"
+#include "commands/rpush.hpp"
+#include "commands/sadd.hpp"
+#include "commands/set.hpp"
+#include "commands/type.hpp"
 #include "engine/engine.hpp"
 #include "engine/interpreter.hpp"
 #include "io/reply.hpp"
-#include "parser/commands.hpp"
+#include "commands/all.hpp"
 
 using namespace valkey;
 

@@ -6,14 +6,13 @@
 #include "engine/engine.hpp"
 #include "engine/interpreter.hpp"
 #include "io/reply.hpp"
-#include "parser/commands.hpp"
+#include "commands/all.hpp"
 
 using namespace valkey;
 
-static engine::Engine make_eng() { return engine::Engine{}; }
 
 TEST(InterpreterZSet, AddRankRange) {
-    auto eng = make_eng();
+    auto eng =engine::Engine{};
     auto r = engine::Eval(eng, cmd_nodes::ZAdd{"z", {{1.0, "a"}, {3.0, "c"}, {2.0, "b"}}});
     EXPECT_EQ(std::get<io::Int>(r).value, 3);
     EXPECT_EQ(std::get<io::Int>(engine::Eval(eng, cmd_nodes::ZCard{"z"})).value, 3);
@@ -27,7 +26,7 @@ TEST(InterpreterZSet, AddRankRange) {
 }
 
 TEST(InterpreterZSet, RemAndWrongType) {
-    auto eng = make_eng();
+    auto eng =engine::Engine{};
     engine::Eval(eng, cmd_nodes::ZAdd{"z", {{1.0, "a"}, {2.0, "b"}}});
     EXPECT_EQ(std::get<io::Int>(engine::Eval(eng, cmd_nodes::ZRem{"z", {"a", "x"}})).value, 1);
     EXPECT_EQ(std::get<io::Int>(engine::Eval(eng, cmd_nodes::ZCard{"z"})).value, 1);

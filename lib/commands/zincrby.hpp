@@ -8,15 +8,24 @@
 #include "engine/engine.hpp"
 #include "engine/replies.hpp"
 #include "io/reply.hpp"
-#include "parser/commands.hpp"
 #include "parser/lexer/types.hpp"
-#include "parser/registry_types.hpp"
 #include "parser/token_extract.hpp"
-#include "stored_types/zset.hpp"
+#include "meta/command_trait.hpp"
+#include "structures/zset.hpp"
+
+namespace valkey::cmd_nodes {
+
+struct ZIncrBy {
+    std::string key;
+    double delta;
+    std::string member;
+};
+
+}  // namespace valkey::cmd_nodes
 
 namespace valkey::commands::zincrby {
 
-std::expected<parser::Cmd, parser::ParseError> Build(std::span<const parser::Token> args) {
+inline std::expected<cmd_nodes::ZIncrBy, parser::ParseError> Build(std::span<const parser::Token> args) {
     auto k = parser::TokenToString(args[0], 1);
     if (!k) {
         return std::unexpected(k.error());
@@ -32,10 +41,9 @@ std::expected<parser::Cmd, parser::ParseError> Build(std::span<const parser::Tok
     return cmd_nodes::ZIncrBy{std::move(*k), *d, std::move(*m)};
 }
 
-io::Reply Exec(engine::Engine& e, const parser::Cmd& c) {
-    const auto& x = std::get<cmd_nodes::ZIncrBy>(c);
+inline io::Reply Exec(engine::Engine& e, const cmd_nodes::ZIncrBy& x) {
     double new_score = 0;
-    auto st = e.Upsert<storage::ZSet>(x.key, [&](storage::ZSet& z) {
+    auto st = e.Upsert<structures::ZSet>(x.key, [&](structures::ZSet& z) {
         auto it = z.scores.find(x.member);
         if (it == z.scores.end()) {
             new_score = x.delta;
@@ -53,15 +61,12 @@ io::Reply Exec(engine::Engine& e, const parser::Cmd& c) {
             return engine::WrongTypeReply();
         case engine::Engine::UpsertStatus::kOom:
             return engine::OomReply();
-        case engine::Engine::UpsertStatus::kOk:
-            return io::MakeBulk(std::to_string(new_score));
+        default:
+            break;
     }
-    __builtin_unreachable();
+    return io::MakeBulk(std::to_string(new_score));
 }
 
-struct Trait {
-    using Node = cmd_nodes::ZIncrBy;
-    static constexpr parser::CommandEntry kEntry{"ZINCRBY", {3, 3}, &Build, &Exec};
-};
+using Trait = meta::CommandTrait<cmd_nodes::ZIncrBy, "ZINCRBY", {3, 3}, &Build, &Exec>;
 
 }  // namespace valkey::commands::zincrby

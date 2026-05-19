@@ -10,12 +10,12 @@ namespace valkey::engine {
 
 template <class T>
 inline size_t SizeOf(const T& val) {
-    return meta::TraitFor<T, stored_types::AllTypes>::SizeOf(val);
+    return meta::TraitForT<T, stored_types::AllStoredTypes>::SizeOf(val);
 }
 
 template <class T>
 inline bool IsEmpty(const T& val) {
-    return meta::TraitFor<T, stored_types::AllTypes>::IsEmpty(val);
+    return meta::TraitForT<T, stored_types::AllStoredTypes>::IsEmpty(val);
 }
 
 class MemoryTracker {

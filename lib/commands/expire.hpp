@@ -1,21 +1,31 @@
 #pragma once
 
 #include <chrono>
+#include <cstdint>
 #include <expected>
 #include <span>
+#include <string>
+#include <string_view>
 #include <utility>
-#include <variant>
 
 #include "engine/engine.hpp"
 #include "io/reply.hpp"
-#include "parser/commands.hpp"
+#include "meta/command_trait.hpp"
 #include "parser/lexer/types.hpp"
-#include "parser/registry_types.hpp"
 #include "parser/token_extract.hpp"
+
+namespace valkey::cmd_nodes {
+
+struct Expire {
+    std::string key;
+    int64_t seconds;
+};
+
+}  // namespace valkey::cmd_nodes
 
 namespace valkey::commands::expire {
 
-std::expected<parser::Cmd, parser::ParseError> Build(
+inline std::expected<cmd_nodes::Expire, parser::ParseError> Build(
     std::span<const parser::Token> args) {
     auto k = parser::TokenToString(args[0], 1);
     if (!k) {
@@ -28,15 +38,11 @@ std::expected<parser::Cmd, parser::ParseError> Build(
     return cmd_nodes::Expire{std::move(*k), *secs};
 }
 
-io::Reply Exec(engine::Engine& e, const parser::Cmd& c) {
-    const auto& x = std::get<cmd_nodes::Expire>(c);
+inline io::Reply Exec(engine::Engine& e, const cmd_nodes::Expire& x) {
     bool ok = e.ExpireKey(x.key, std::chrono::seconds{x.seconds});
     return io::MakeInt(ok ? 1 : 0);
 }
 
-struct Trait {
-    using Node = cmd_nodes::Expire;
-    static constexpr parser::CommandEntry kEntry{"EXPIRE", {2, 2}, &Build, &Exec};
-};
+using Trait = meta::CommandTrait<cmd_nodes::Expire, "EXPIRE", {2, 2}, &Build, &Exec>;
 
 }  // namespace valkey::commands::expire

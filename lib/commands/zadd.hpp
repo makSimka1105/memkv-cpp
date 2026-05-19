@@ -5,20 +5,30 @@
 #include <expected>
 #include <span>
 #include <string>
+#include <string_view>
 #include <utility>
 #include <vector>
 
 #include "engine/engine.hpp"
 #include "engine/replies.hpp"
 #include "io/reply.hpp"
-#include "parser/commands.hpp"
 #include "parser/lexer/types.hpp"
-#include "parser/registry_types.hpp"
 #include "parser/token_extract.hpp"
+#include "meta/command_trait.hpp"
+#include "structures/zset.hpp"
+
+namespace valkey::cmd_nodes {
+
+struct ZAdd {
+    std::string key;
+    std::vector<std::pair<double, std::string>> entries;
+};
+
+}  // namespace valkey::cmd_nodes
 
 namespace valkey::commands::zadd {
 
-std::expected<parser::Cmd, parser::ParseError> Build(std::span<const parser::Token> args) {
+inline std::expected<cmd_nodes::ZAdd, parser::ParseError> Build(std::span<const parser::Token> args) {
     auto k = parser::TokenToString(args[0], 1);
     if (!k) {
         return std::unexpected(k.error());
@@ -43,10 +53,9 @@ std::expected<parser::Cmd, parser::ParseError> Build(std::span<const parser::Tok
     return cmd_nodes::ZAdd{std::move(*k), std::move(entries)};
 }
 
-io::Reply Exec(engine::Engine& e, const parser::Cmd& c) {
-    const auto& x = std::get<cmd_nodes::ZAdd>(c);
+inline io::Reply Exec(engine::Engine& e, const cmd_nodes::ZAdd& x) {
     int64_t added = 0;
-    auto st = e.Upsert<storage::ZSet>(x.key, [&](storage::ZSet& z) {
+    auto st = e.Upsert<structures::ZSet>(x.key, [&](structures::ZSet& z) {
         for (const auto& [score, member] : x.entries) {
             auto it = z.scores.find(member);
             if (it == z.scores.end()) {
@@ -65,15 +74,12 @@ io::Reply Exec(engine::Engine& e, const parser::Cmd& c) {
             return engine::WrongTypeReply();
         case engine::Engine::UpsertStatus::kOom:
             return engine::OomReply();
-        case engine::Engine::UpsertStatus::kOk:
-            return io::MakeInt(added);
+        default:
+            break;
     }
-    __builtin_unreachable();
+    return io::MakeInt(added);
 }
 
-struct Trait {
-    using Node = cmd_nodes::ZAdd;
-    static constexpr parser::CommandEntry kEntry{"ZADD", {3, parser::kUnbounded}, &Build, &Exec};
-};
+using Trait = meta::CommandTrait<cmd_nodes::ZAdd, "ZADD", {3, parser::kUnbounded}, &Build, &Exec>;
 
 }  // namespace valkey::commands::zadd

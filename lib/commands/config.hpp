@@ -4,20 +4,28 @@
 #include <span>
 #include <string>
 #include <utility>
-#include <variant>
+#include <vector>
 
 #include "engine/config.hpp"
 #include "engine/engine.hpp"
-#include "engine/replies.hpp"
 #include "io/reply.hpp"
-#include "parser/commands.hpp"
+#include "meta/command_trait.hpp"
 #include "parser/lexer/types.hpp"
-#include "parser/registry_types.hpp"
 #include "parser/token_extract.hpp"
+
+namespace valkey::cmd_nodes {
+
+struct Config {
+    bool is_set;
+    std::string param;
+    std::string value;
+};
+
+}  // namespace valkey::cmd_nodes
 
 namespace valkey::commands::config {
 
-std::expected<parser::Cmd, parser::ParseError> Build(
+inline std::expected<cmd_nodes::Config, parser::ParseError> Build(
     std::span<const parser::Token> args) {
     auto sub = parser::TokenToString(args[0], 1);
     if (!sub) {
@@ -32,8 +40,7 @@ std::expected<parser::Cmd, parser::ParseError> Build(
     }
     if (parser::CaseEqual(*sub, "SET")) {
         if (args.size() < 3) {
-            return std::unexpected(
-                parser::ParseError{"CONFIG SET requires a value", 3});
+            return std::unexpected(parser::ParseError{"CONFIG SET requires a value", 3});
         }
         auto val = parser::TokenToString(args[2], 3);
         if (!val) {
@@ -44,8 +51,7 @@ std::expected<parser::Cmd, parser::ParseError> Build(
     return std::unexpected(parser::ParseError{"unknown CONFIG subcommand: " + *sub, 1});
 }
 
-io::Reply Exec(engine::Engine& e, const parser::Cmd& c) {
-    const auto& x = std::get<cmd_nodes::Config>(c);
+inline io::Reply Exec(engine::Engine& e, const cmd_nodes::Config& x) {
     if (!parser::CaseEqual(x.param, "maxmemory")) {
         return io::MakeErr("ERR unknown option: " + x.param);
     }
@@ -63,9 +69,6 @@ io::Reply Exec(engine::Engine& e, const parser::Cmd& c) {
     return io::Ok();
 }
 
-struct Trait {
-    using Node = cmd_nodes::Config;
-    static constexpr parser::CommandEntry kEntry{"CONFIG", {2, 3}, &Build, &Exec};
-};
+using Trait = meta::CommandTrait<cmd_nodes::Config, "CONFIG", {2, 3}, &Build, &Exec>;
 
 }  // namespace valkey::commands::config

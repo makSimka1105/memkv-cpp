@@ -67,28 +67,14 @@ public:
 
     ValueVar* GetMutable(std::string_view key,
                          ChronoTimePoint now = std::chrono::steady_clock::now()) {
-        auto it = map_.find(key);
-        if (it == map_.end()) {
-            return nullptr;
-        }
-        if (it->second.expires && *it->second.expires <= now) {
-            map_.erase(it);
-            return nullptr;
-        }
-        return &it->second.value;
+        auto it = FindLive(key, now);
+        return it == map_.end() ? nullptr : &it->second.value;
     }
 
     const ValueVar* Get(std::string_view key,
                         ChronoTimePoint now = std::chrono::steady_clock::now()) {
-        auto it = map_.find(key);
-        if (it == map_.end()) {
-            return nullptr;
-        }
-        if (it->second.expires && *it->second.expires <= now) {
-            map_.erase(it);
-            return nullptr;
-        }
-        return &it->second.value;
+        auto it = FindLive(key, now);
+        return it == map_.end() ? nullptr : &it->second.value;
     }
 
     bool Del(std::string_view key) {
@@ -158,6 +144,18 @@ public:
 
 private:
     using Map = std::unordered_map<std::string, ValueWithMeta, StringHash, std::equal_to<>>;
+
+    Map::iterator FindLive(std::string_view key, ChronoTimePoint now) {
+        auto it = map_.find(key);
+        if (it == map_.end()) {
+            return it;
+        }
+        if (it->second.expires && *it->second.expires <= now) {
+            map_.erase(it);
+            return map_.end();
+        }
+        return it;
+    }
 
     Map map_;
 };

@@ -2,30 +2,31 @@
 
 #include <expected>
 #include <span>
-#include <variant>
 
 #include "engine/engine.hpp"
 #include "io/reply.hpp"
-#include "parser/commands.hpp"
+#include "meta/command_trait.hpp"
 #include "parser/lexer/types.hpp"
-#include "parser/registry_types.hpp"
 #include "parser/token_extract.hpp"
+
+namespace valkey::cmd_nodes {
+
+struct FlushDb {};
+
+}  // namespace valkey::cmd_nodes
 
 namespace valkey::commands::flushdb {
 
-std::expected<parser::Cmd, parser::ParseError> Build(
+inline std::expected<cmd_nodes::FlushDb, parser::ParseError> Build(
     std::span<const parser::Token> /*args*/) {
     return cmd_nodes::FlushDb{};
 }
 
-io::Reply Exec(engine::Engine& e, const parser::Cmd& /*c*/) {
+inline io::Reply Exec(engine::Engine& e, const cmd_nodes::FlushDb& /*x*/) {
     e.FlushDb();
     return io::Ok();
 }
 
-struct Trait {
-    using Node = cmd_nodes::FlushDb;
-    static constexpr parser::CommandEntry kEntry{"FLUSHDB", {0, 0}, &Build, &Exec};
-};
+using Trait = meta::CommandTrait<cmd_nodes::FlushDb, "FLUSHDB", {0, 0}, &Build, &Exec>;
 
 }  // namespace valkey::commands::flushdb

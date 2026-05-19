@@ -3,21 +3,29 @@
 #include <cstdint>
 #include <expected>
 #include <span>
+#include <string>
+#include <string_view>
 #include <utility>
-// #include <variant>
 
 #include "engine/engine.hpp"
 #include "engine/replies.hpp"
 #include "io/reply.hpp"
-#include "parser/commands.hpp"
+#include "meta/command_trait.hpp"
 #include "parser/lexer/types.hpp"
-#include "parser/registry_types.hpp"
 #include "parser/token_extract.hpp"
-#include "storage/value.hpp"
+
+namespace valkey::cmd_nodes {
+
+struct Append {
+    std::string key;
+    std::string value;
+};
+
+}  // namespace valkey::cmd_nodes
 
 namespace valkey::commands::append {
 
-std::expected<parser::Cmd, parser::ParseError> Build(
+inline std::expected<cmd_nodes::Append, parser::ParseError> Build(
     std::span<const parser::Token> args) {
     auto k = parser::TokenToString(args[0], 1);
     if (!k) {
@@ -30,10 +38,9 @@ std::expected<parser::Cmd, parser::ParseError> Build(
     return cmd_nodes::Append{std::move(*k), std::move(*v)};
 }
 
-io::Reply Exec(engine::Engine& e, const parser::Cmd& c) {
-    const auto& x = std::get<cmd_nodes::Append>(c);
+inline io::Reply Exec(engine::Engine& e, const cmd_nodes::Append& x) {
     int64_t length = 0;
-    auto st = e.Upsert<storage::String>(x.key, [&](storage::String& s) {
+    auto st = e.Upsert<std::string>(x.key, [&](std::string& s) {
         s.append(x.value);
         length = s.size();
     });
@@ -42,15 +49,12 @@ io::Reply Exec(engine::Engine& e, const parser::Cmd& c) {
             return engine::WrongTypeReply();
         case engine::Engine::UpsertStatus::kOom:
             return engine::OomReply();
-        case engine::Engine::UpsertStatus::kOk:
-            return io::MakeInt(length);
+        default:
+            break;
     }
-    return engine::WrongTypeReply();
+    return io::MakeInt(length);
 }
 
-struct Trait {
-    using Node = cmd_nodes::Append;
-    static constexpr parser::CommandEntry kEntry{"APPEND", {2, 2}, &Build, &Exec};
-};
+using Trait = meta::CommandTrait<cmd_nodes::Append, "APPEND", {2, 2}, &Build, &Exec>;
 
 }  // namespace valkey::commands::append

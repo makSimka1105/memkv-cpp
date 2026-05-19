@@ -2,23 +2,32 @@
 
 #include <algorithm>
 #include <cstdint>
+#include <deque>
 #include <expected>
 #include <span>
 #include <utility>
-#include <variant>
 
 #include "engine/engine.hpp"
 #include "engine/replies.hpp"
 #include "io/reply.hpp"
-#include "parser/commands.hpp"
+#include "meta/command_trait.hpp"
 #include "parser/lexer/types.hpp"
-#include "parser/registry_types.hpp"
 #include "parser/token_extract.hpp"
-#include "storage/value.hpp"
+
+namespace valkey::cmd_nodes {
+
+struct LInsert {
+    std::string key;
+    bool before;
+    std::string pivot;
+    std::string value;
+};
+
+}  // namespace valkey::cmd_nodes
 
 namespace valkey::commands::linsert {
 
-std::expected<parser::Cmd, parser::ParseError> Build(
+inline std::expected<cmd_nodes::LInsert, parser::ParseError> Build(
     std::span<const parser::Token> args) {
     auto k = parser::TokenToString(args[0], 1);
     if (!k) {
@@ -47,11 +56,10 @@ std::expected<parser::Cmd, parser::ParseError> Build(
     return cmd_nodes::LInsert{std::move(*k), before, std::move(*pivot), std::move(*val)};
 }
 
-io::Reply Exec(engine::Engine& e, const parser::Cmd& c) {
-    const auto& x = std::get<cmd_nodes::LInsert>(c);
+inline io::Reply Exec(engine::Engine& e, const cmd_nodes::LInsert& x) {
     int64_t result = 0;
     bool pivot_found = false;
-    auto st = e.Mutate<storage::List>(x.key, [&](storage::List& lst) {
+    auto st = e.Mutate<std::deque<std::string>>(x.key, [&](std::deque<std::string>& lst) {
         auto it = std::find(lst.begin(), lst.end(), x.pivot);
         if (it == lst.end()) {
             return;
@@ -75,9 +83,6 @@ io::Reply Exec(engine::Engine& e, const parser::Cmd& c) {
     return io::MakeInt(result);
 }
 
-struct Trait {
-    using Node = cmd_nodes::LInsert;
-    static constexpr parser::CommandEntry kEntry{"LINSERT", {4, 4}, &Build, &Exec};
-};
+using Trait = meta::CommandTrait<cmd_nodes::LInsert, "LINSERT", {4, 4}, &Build, &Exec>;
 
 }  // namespace valkey::commands::linsert

@@ -1,23 +1,30 @@
 #pragma once
 
 #include <cstdint>
+#include <deque>
 #include <expected>
 #include <span>
 #include <utility>
-#include <variant>
 
 #include "engine/engine.hpp"
 #include "engine/replies.hpp"
 #include "io/reply.hpp"
-#include "parser/commands.hpp"
+#include "meta/command_trait.hpp"
 #include "parser/lexer/types.hpp"
-#include "parser/registry_types.hpp"
 #include "parser/token_extract.hpp"
-#include "storage/value.hpp"
+
+namespace valkey::cmd_nodes {
+
+struct LPush {
+    std::string key;
+    std::vector<std::string> values;
+};
+
+}  // namespace valkey::cmd_nodes
 
 namespace valkey::commands::lpush {
 
-std::expected<parser::Cmd, parser::ParseError> Build(
+inline std::expected<cmd_nodes::LPush, parser::ParseError> Build(
     std::span<const parser::Token> args) {
     auto k = parser::TokenToString(args[0], 1);
     if (!k) {
@@ -30,10 +37,9 @@ std::expected<parser::Cmd, parser::ParseError> Build(
     return cmd_nodes::LPush{std::move(*k), std::move(*vals)};
 }
 
-io::Reply Exec(engine::Engine& e, const parser::Cmd& c) {
-    const auto& x = std::get<cmd_nodes::LPush>(c);
+inline io::Reply Exec(engine::Engine& e, const cmd_nodes::LPush& x) {
     int64_t length = 0;
-    auto st = e.Upsert<storage::List>(x.key, [&](storage::List& lst) {
+    auto st = e.Upsert<std::deque<std::string>>(x.key, [&](std::deque<std::string>& lst) {
         for (const auto& s : x.values) {
             lst.push_front(s);
         }
@@ -44,15 +50,12 @@ io::Reply Exec(engine::Engine& e, const parser::Cmd& c) {
             return engine::WrongTypeReply();
         case engine::Engine::UpsertStatus::kOom:
             return engine::OomReply();
-        case engine::Engine::UpsertStatus::kOk:
-            return io::MakeInt(length);
+        default:
+            break;
     }
-    return engine::WrongTypeReply();
+    return io::MakeInt(length);
 }
 
-struct Trait {
-    using Node = cmd_nodes::LPush;
-    static constexpr parser::CommandEntry kEntry{"LPUSH", {2, parser::kUnbounded}, &Build, &Exec};
-};
+using Trait = meta::CommandTrait<cmd_nodes::LPush, "LPUSH", {2, parser::kUnbounded}, &Build, &Exec>;
 
 }  // namespace valkey::commands::lpush

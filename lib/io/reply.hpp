@@ -1,6 +1,5 @@
 #pragma once
 
-#include <concepts>
 #include <cstdint>
 #include <memory>
 #include <string>
@@ -59,10 +58,5 @@ Reply MakeErr(std::string m) {
 Reply MakeArray(std::vector<Reply> xs) {
     return std::make_unique<Array>(Array{std::move(xs)});
 }
-
-template <typename W>
-concept Replyable = requires(W& w, const Reply& r) {
-    { Write(w, r) } -> std::same_as<void>;
-};
 
 }  // namespace valkey::io

@@ -3,19 +3,29 @@
 #include <cstdint>
 #include <expected>
 #include <span>
+#include <string>
+#include <string_view>
 #include <utility>
 
 #include "engine/engine.hpp"
 #include "engine/replies.hpp"
 #include "io/reply.hpp"
-#include "parser/commands.hpp"
+#include "meta/command_trait.hpp"
 #include "parser/lexer/types.hpp"
-#include "parser/registry_types.hpp"
 #include "parser/token_extract.hpp"
+#include "structures/zset.hpp"
+
+namespace valkey::cmd_nodes {
+
+struct ZCard {
+    std::string key;
+};
+
+}  // namespace valkey::cmd_nodes
 
 namespace valkey::commands::zcard {
 
-std::expected<parser::Cmd, parser::ParseError> Build(std::span<const parser::Token> args) {
+inline std::expected<cmd_nodes::ZCard, parser::ParseError> Build(std::span<const parser::Token> args) {
     auto k = parser::TokenToString(args[0], 1);
     if (!k) {
         return std::unexpected(k.error());
@@ -23,9 +33,8 @@ std::expected<parser::Cmd, parser::ParseError> Build(std::span<const parser::Tok
     return cmd_nodes::ZCard{std::move(*k)};
 }
 
-io::Reply Exec(engine::Engine& e, const parser::Cmd& c) {
-    const auto& x = std::get<cmd_nodes::ZCard>(c);
-    auto [z, st] = e.As<storage::ZSet>(x.key);
+inline io::Reply Exec(engine::Engine& e, const cmd_nodes::ZCard& x) {
+    auto [z, st] = e.As<structures::ZSet>(x.key);
     if (st == engine::Engine::TypeStatus::kWrongType) {
         return engine::WrongTypeReply();
     }
@@ -35,9 +44,6 @@ io::Reply Exec(engine::Engine& e, const parser::Cmd& c) {
     return io::MakeInt(static_cast<int64_t>(z->scores.size()));
 }
 
-struct Trait {
-    using Node = cmd_nodes::ZCard;
-    static constexpr parser::CommandEntry kEntry{"ZCARD", {1, 1}, &Build, &Exec};
-};
+using Trait = meta::CommandTrait<cmd_nodes::ZCard, "ZCARD", {1, 1}, &Build, &Exec>;
 
 }  // namespace valkey::commands::zcard

@@ -4,10 +4,19 @@
 
 #include <gtest/gtest.h>
 
+#include "commands/sadd.hpp"
+#include "commands/scard.hpp"
+#include "commands/sdiff.hpp"
+#include "commands/set.hpp"
+#include "commands/sinter.hpp"
+#include "commands/sismember.hpp"
+#include "commands/smembers.hpp"
+#include "commands/srem.hpp"
+#include "commands/sunion.hpp"
 #include "engine/engine.hpp"
 #include "engine/interpreter.hpp"
 #include "io/reply.hpp"
-#include "parser/commands.hpp"
+#include "commands/all.hpp"
 
 using namespace valkey;
 

@@ -3,19 +3,28 @@
 #include <cstdint>
 #include <expected>
 #include <span>
+#include <string>
+#include <string_view>
 #include <utility>
-#include <variant>
+#include <vector>
 
 #include "engine/engine.hpp"
 #include "io/reply.hpp"
-#include "parser/commands.hpp"
+#include "meta/command_trait.hpp"
 #include "parser/lexer/types.hpp"
-#include "parser/registry_types.hpp"
 #include "parser/token_extract.hpp"
+
+namespace valkey::cmd_nodes {
+
+struct Del {
+    std::vector<std::string> keys;
+};
+
+}  // namespace valkey::cmd_nodes
 
 namespace valkey::commands::del {
 
-std::expected<parser::Cmd, parser::ParseError> Build(
+inline std::expected<cmd_nodes::Del, parser::ParseError> Build(
     std::span<const parser::Token> args) {
     auto keys = parser::CollectStrings(args, 1);
     if (!keys) {
@@ -24,8 +33,7 @@ std::expected<parser::Cmd, parser::ParseError> Build(
     return cmd_nodes::Del{std::move(*keys)};
 }
 
-io::Reply Exec(engine::Engine& e, const parser::Cmd& c) {
-    const auto& x = std::get<cmd_nodes::Del>(c);
+inline io::Reply Exec(engine::Engine& e, const cmd_nodes::Del& x) {
     int64_t count = 0;
     for (const auto& key : x.keys) {
         if (e.DelKey(key)) {
@@ -35,9 +43,7 @@ io::Reply Exec(engine::Engine& e, const parser::Cmd& c) {
     return io::MakeInt(count);
 }
 
-struct Trait {
-    using Node = cmd_nodes::Del;
-    static constexpr parser::CommandEntry kEntry{"DEL", {1, parser::kUnbounded}, &Build, &Exec};
-};
+using Trait = meta::CommandTrait<cmd_nodes::Del, "DEL", {1, parser::kUnbounded},
+                                  &Build, &Exec>;
 
 }  // namespace valkey::commands::del

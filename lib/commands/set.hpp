@@ -3,19 +3,26 @@
 #include <expected>
 #include <span>
 #include <utility>
-#include <variant>
 
 #include "engine/engine.hpp"
 #include "engine/replies.hpp"
 #include "io/reply.hpp"
-#include "parser/commands.hpp"
+#include "meta/command_trait.hpp"
 #include "parser/lexer/types.hpp"
-#include "parser/registry_types.hpp"
 #include "parser/token_extract.hpp"
+
+namespace valkey::cmd_nodes {
+
+struct Set {
+    std::string key;
+    std::string value;
+};
+
+}  // namespace valkey::cmd_nodes
 
 namespace valkey::commands::set {
 
-std::expected<parser::Cmd, parser::ParseError> Build(
+inline std::expected<cmd_nodes::Set, parser::ParseError> Build(
     std::span<const parser::Token> args) {
     auto k = parser::TokenToString(args[0], 1);
     if (!k) {
@@ -28,17 +35,13 @@ std::expected<parser::Cmd, parser::ParseError> Build(
     return cmd_nodes::Set{std::move(*k), std::move(*v)};
 }
 
-io::Reply Exec(engine::Engine& e, const parser::Cmd& c) {
-    const auto& x = std::get<cmd_nodes::Set>(c);
+inline io::Reply Exec(engine::Engine& e, const cmd_nodes::Set& x) {
     if (!e.SetString(x.key, x.value)) {
         return engine::OomReply();
     }
     return io::Ok();
 }
 
-struct Trait {
-    using Node = cmd_nodes::Set;
-    static constexpr parser::CommandEntry kEntry{"SET", {2, 2}, &Build, &Exec};
-};
+using Trait = meta::CommandTrait<cmd_nodes::Set, "SET", {2, 2}, &Build, &Exec>;
 
 }  // namespace valkey::commands::set

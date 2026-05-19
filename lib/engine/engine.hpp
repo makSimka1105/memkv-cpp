@@ -34,7 +34,7 @@ public:
         }
         mem_.Sub(old_bytes);
         mem_.Add(new_bytes);
-        storage_.Set(std::move(key), storage::String(std::move(value)));
+        storage_.Set(std::move(key), std::move(value));
         return true;
     }
 
@@ -71,19 +71,17 @@ public:
         mem_.SetLimit(cfg_.maxmemory);
     }
 
-    size_t SweepExpired() { return storage_.SweepExpired(); }
-
     std::string_view TypeOf(std::string_view key) {
-        const auto* v = storage_.Get(key);
-        if (v == nullptr) {
+        const auto* value_var = storage_.Get(key);
+        if (value_var == nullptr) {
             return "none";
         }
         return std::visit(
             [](const auto& val) -> std::string_view {
                 using T = std::decay_t<decltype(val)>;
-                return meta::TraitFor<T, stored_types::AllTypes>::kName;
+                return meta::TraitForT<T, stored_types::AllStoredTypes>::kName;
             },
-            *v);
+            *value_var);
     }
 
     std::vector<std::string> Keys(std::string_view pattern) { return storage_.Keys(pattern); }
@@ -92,11 +90,11 @@ public:
 
     template <typename T>
     std::pair<const T*, TypeStatus> As(std::string_view key) {
-        const auto* v = storage_.Get(key);
-        if (v == nullptr) {
+        const auto* value_var = storage_.Get(key);
+        if (value_var == nullptr) {
             return {nullptr, TypeStatus::kMissing};
         }
-        const auto* t = std::get_if<T>(v);
+        const auto* t = std::get_if<T>(value_var);
         if (t == nullptr) {
             return {nullptr, TypeStatus::kWrongType};
         }
@@ -105,11 +103,11 @@ public:
 
     template <typename T, typename Fn>
     TypeStatus Mutate(std::string_view key, Fn&& fn) {
-        auto* v = storage_.GetMutable(key);
-        if (v == nullptr) {
+        auto* value_var = storage_.GetMutable(key);
+        if (value_var == nullptr) {
             return TypeStatus::kMissing;
         }
-        auto* t = std::get_if<T>(v);
+        auto* t = std::get_if<T>(value_var);
         if (t == nullptr) {
             return TypeStatus::kWrongType;
         }
@@ -127,9 +125,9 @@ public:
 
     template <typename T, typename Fn>
     UpsertStatus Upsert(std::string key, Fn&& fn) {
-        auto* v = storage_.GetMutable(key);
-        if (v != nullptr) {
-            auto* t = std::get_if<T>(v);
+        auto* value_var = storage_.GetMutable(key);
+        if (value_var != nullptr) {
+            auto* t = std::get_if<T>(value_var);
             if (t == nullptr) {
                 return UpsertStatus::kWrongType;
             }
@@ -156,12 +154,12 @@ private:
     }
 
     size_t ExistingBytes(std::string_view key) {
-        const auto* v = storage_.Get(key);
-        if (v == nullptr) {
+        const auto* value_var = storage_.Get(key);
+        if (value_var == nullptr) {
             return 0;
         }
         return StringBytes(key) +
-               std::visit([](const auto& val) { return engine::SizeOf(val); }, *v);
+               std::visit([](const auto& val) { return engine::SizeOf(val); }, *value_var);
     }
 
     Config cfg_;

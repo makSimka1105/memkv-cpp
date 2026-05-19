@@ -31,7 +31,6 @@ inline void RunStdinRepl(engine::Engine& eng, std::istream& in, std::ostream& ou
         }
 
         human::Write(out, engine::Eval(eng, *cmd));
-        eng.SweepExpired();
     }
 }
 

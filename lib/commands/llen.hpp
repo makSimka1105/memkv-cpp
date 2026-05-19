@@ -1,23 +1,29 @@
 #pragma once
 
 #include <cstdint>
+#include <deque>
 #include <expected>
 #include <span>
 #include <utility>
-#include <variant>
 
 #include "engine/engine.hpp"
 #include "engine/replies.hpp"
 #include "io/reply.hpp"
-#include "parser/commands.hpp"
+#include "meta/command_trait.hpp"
 #include "parser/lexer/types.hpp"
-#include "parser/registry_types.hpp"
 #include "parser/token_extract.hpp"
-#include "storage/value.hpp"
+
+namespace valkey::cmd_nodes {
+
+struct LLen {
+    std::string key;
+};
+
+}  // namespace valkey::cmd_nodes
 
 namespace valkey::commands::llen {
 
-std::expected<parser::Cmd, parser::ParseError> Build(
+inline std::expected<cmd_nodes::LLen, parser::ParseError> Build(
     std::span<const parser::Token> args) {
     auto k = parser::TokenToString(args[0], 1);
     if (!k) {
@@ -26,9 +32,8 @@ std::expected<parser::Cmd, parser::ParseError> Build(
     return cmd_nodes::LLen{std::move(*k)};
 }
 
-io::Reply Exec(engine::Engine& e, const parser::Cmd& c) {
-    const auto& x = std::get<cmd_nodes::LLen>(c);
-    auto [lst, st] = e.As<storage::List>(x.key);
+inline io::Reply Exec(engine::Engine& e, const cmd_nodes::LLen& x) {
+    auto [lst, st] = e.As<std::deque<std::string>>(x.key);
     if (st == engine::Engine::TypeStatus::kWrongType) {
         return engine::WrongTypeReply();
     }
@@ -38,9 +43,6 @@ io::Reply Exec(engine::Engine& e, const parser::Cmd& c) {
     return io::MakeInt(lst->size());
 }
 
-struct Trait {
-    using Node = cmd_nodes::LLen;
-    static constexpr parser::CommandEntry kEntry{"LLEN", {1, 1}, &Build, &Exec};
-};
+using Trait = meta::CommandTrait<cmd_nodes::LLen, "LLEN", {1, 1}, &Build, &Exec>;
 
 }  // namespace valkey::commands::llen

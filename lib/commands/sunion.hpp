@@ -5,21 +5,26 @@
 #include <string>
 #include <unordered_set>
 #include <utility>
-#include <variant>
 #include <vector>
 
 #include "engine/engine.hpp"
 #include "engine/replies.hpp"
 #include "io/reply.hpp"
-#include "parser/commands.hpp"
+#include "meta/command_trait.hpp"
 #include "parser/lexer/types.hpp"
-#include "parser/registry_types.hpp"
 #include "parser/token_extract.hpp"
-#include "storage/value.hpp"
+
+namespace valkey::cmd_nodes {
+
+struct SUnion {
+    std::vector<std::string> keys;
+};
+
+}  // namespace valkey::cmd_nodes
 
 namespace valkey::commands::sunion {
 
-std::expected<parser::Cmd, parser::ParseError> Build(
+inline std::expected<cmd_nodes::SUnion, parser::ParseError> Build(
     std::span<const parser::Token> args) {
     auto keys = parser::CollectStrings(args, 1);
     if (!keys) {
@@ -28,11 +33,10 @@ std::expected<parser::Cmd, parser::ParseError> Build(
     return cmd_nodes::SUnion{std::move(*keys)};
 }
 
-io::Reply Exec(engine::Engine& e, const parser::Cmd& c) {
-    const auto& x = std::get<cmd_nodes::SUnion>(c);
+inline io::Reply Exec(engine::Engine& e, const cmd_nodes::SUnion& x) {
     std::unordered_set<std::string> result;
     for (const auto& key : x.keys) {
-        auto [s, st] = e.As<storage::Set>(key);
+        auto [s, st] = e.As<std::unordered_set<std::string>>(key);
         if (st == engine::Engine::TypeStatus::kWrongType) {
             return engine::WrongTypeReply();
         }
@@ -48,9 +52,6 @@ io::Reply Exec(engine::Engine& e, const parser::Cmd& c) {
     return io::MakeArray(std::move(items));
 }
 
-struct Trait {
-    using Node = cmd_nodes::SUnion;
-    static constexpr parser::CommandEntry kEntry{"SUNION", {1, parser::kUnbounded}, &Build, &Exec};
-};
+using Trait = meta::CommandTrait<cmd_nodes::SUnion, "SUNION", {1, parser::kUnbounded}, &Build, &Exec>;
 
 }  // namespace valkey::commands::sunion

@@ -4,6 +4,7 @@
 #include <expected>
 #include <span>
 #include <string>
+#include <string_view>
 #include <unordered_set>
 #include <utility>
 #include <vector>
@@ -11,15 +12,21 @@
 #include "engine/engine.hpp"
 #include "engine/replies.hpp"
 #include "io/reply.hpp"
-#include "parser/commands.hpp"
+#include "meta/command_trait.hpp"
 #include "parser/lexer/types.hpp"
-#include "parser/registry_types.hpp"
 #include "parser/token_extract.hpp"
-#include "storage/value.hpp"
+
+namespace valkey::cmd_nodes {
+
+struct SInter {
+    std::vector<std::string> keys;
+};
+
+}  // namespace valkey::cmd_nodes
 
 namespace valkey::commands::sinter {
 
-std::expected<parser::Cmd, parser::ParseError> Build(
+inline std::expected<cmd_nodes::SInter, parser::ParseError> Build(
     std::span<const parser::Token> args) {
     auto keys = parser::CollectStrings(args, 1);
     if (!keys) {
@@ -28,12 +35,11 @@ std::expected<parser::Cmd, parser::ParseError> Build(
     return cmd_nodes::SInter{std::move(*keys)};
 }
 
-io::Reply Exec(engine::Engine& e, const parser::Cmd& c) {
-    const auto& x = std::get<cmd_nodes::SInter>(c);
+inline io::Reply Exec(engine::Engine& e, const cmd_nodes::SInter& x) {
     if (x.keys.empty()) {
         return io::MakeArray({});
     }
-    auto [first, st0] = e.As<storage::Set>(x.keys[0]);
+    auto [first, st0] = e.As<std::unordered_set<std::string>>(x.keys[0]);
     if (st0 == engine::Engine::TypeStatus::kWrongType) {
         return engine::WrongTypeReply();
     }
@@ -42,7 +48,7 @@ io::Reply Exec(engine::Engine& e, const parser::Cmd& c) {
     }
     std::unordered_set<std::string> result(first->begin(), first->end());
     for (size_t i = 1; i < x.keys.size(); ++i) {
-        auto [s, st] = e.As<storage::Set>(x.keys[i]);
+        auto [s, st] = e.As<std::unordered_set<std::string>>(x.keys[i]);
         if (st == engine::Engine::TypeStatus::kWrongType) {
             return engine::WrongTypeReply();
         }
@@ -67,9 +73,6 @@ io::Reply Exec(engine::Engine& e, const parser::Cmd& c) {
     return io::MakeArray(std::move(items));
 }
 
-struct Trait {
-    using Node = cmd_nodes::SInter;
-    static constexpr parser::CommandEntry kEntry{"SINTER", {1, parser::kUnbounded}, &Build, &Exec};
-};
+using Trait = meta::CommandTrait<cmd_nodes::SInter, "SINTER", {1, parser::kUnbounded}, &Build, &Exec>;
 
 }  // namespace valkey::commands::sinter

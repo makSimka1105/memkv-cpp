@@ -4,10 +4,20 @@
 
 #include <gtest/gtest.h>
 
+#include "commands/lindex.hpp"
+#include "commands/linsert.hpp"
+#include "commands/llen.hpp"
+#include "commands/lpop.hpp"
+#include "commands/lpush.hpp"
+#include "commands/lrange.hpp"
+#include "commands/lset.hpp"
+#include "commands/rpop.hpp"
+#include "commands/rpush.hpp"
+#include "commands/set.hpp"
 #include "engine/engine.hpp"
 #include "engine/interpreter.hpp"
 #include "io/reply.hpp"
-#include "parser/commands.hpp"
+#include "commands/all.hpp"
 
 using namespace valkey;
 

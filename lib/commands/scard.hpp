@@ -3,21 +3,27 @@
 #include <cstdint>
 #include <expected>
 #include <span>
+#include <unordered_set>
 #include <utility>
-#include <variant>
 
 #include "engine/engine.hpp"
 #include "engine/replies.hpp"
 #include "io/reply.hpp"
-#include "parser/commands.hpp"
+#include "meta/command_trait.hpp"
 #include "parser/lexer/types.hpp"
-#include "parser/registry_types.hpp"
 #include "parser/token_extract.hpp"
-#include "storage/value.hpp"
+
+namespace valkey::cmd_nodes {
+
+struct SCard {
+    std::string key;
+};
+
+}  // namespace valkey::cmd_nodes
 
 namespace valkey::commands::scard {
 
-std::expected<parser::Cmd, parser::ParseError> Build(
+inline std::expected<cmd_nodes::SCard, parser::ParseError> Build(
     std::span<const parser::Token> args) {
     auto k = parser::TokenToString(args[0], 1);
     if (!k) {
@@ -26,9 +32,8 @@ std::expected<parser::Cmd, parser::ParseError> Build(
     return cmd_nodes::SCard{std::move(*k)};
 }
 
-io::Reply Exec(engine::Engine& e, const parser::Cmd& c) {
-    const auto& x = std::get<cmd_nodes::SCard>(c);
-    auto [s, st] = e.As<storage::Set>(x.key);
+inline io::Reply Exec(engine::Engine& e, const cmd_nodes::SCard& x) {
+    auto [s, st] = e.As<std::unordered_set<std::string>>(x.key);
     if (st == engine::Engine::TypeStatus::kWrongType) {
         return engine::WrongTypeReply();
     }
@@ -38,9 +43,6 @@ io::Reply Exec(engine::Engine& e, const parser::Cmd& c) {
     return io::MakeInt(s->size());
 }
 
-struct Trait {
-    using Node = cmd_nodes::SCard;
-    static constexpr parser::CommandEntry kEntry{"SCARD", {1, 1}, &Build, &Exec};
-};
+using Trait = meta::CommandTrait<cmd_nodes::SCard, "SCARD", {1, 1}, &Build, &Exec>;
 
 }  // namespace valkey::commands::scard

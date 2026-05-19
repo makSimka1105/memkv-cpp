@@ -4,18 +4,24 @@
 #include <expected>
 #include <span>
 #include <utility>
-#include <variant>
 
 #include "engine/engine.hpp"
 #include "io/reply.hpp"
-#include "parser/commands.hpp"
+#include "meta/command_trait.hpp"
 #include "parser/lexer/types.hpp"
-#include "parser/registry_types.hpp"
 #include "parser/token_extract.hpp"
+
+namespace valkey::cmd_nodes {
+
+struct Exists {
+    std::vector<std::string> keys;
+};
+
+}  // namespace valkey::cmd_nodes
 
 namespace valkey::commands::exists {
 
-std::expected<parser::Cmd, parser::ParseError> Build(
+inline std::expected<cmd_nodes::Exists, parser::ParseError> Build(
     std::span<const parser::Token> args) {
     auto keys = parser::CollectStrings(args, 1);
     if (!keys) {
@@ -24,8 +30,7 @@ std::expected<parser::Cmd, parser::ParseError> Build(
     return cmd_nodes::Exists{std::move(*keys)};
 }
 
-io::Reply Exec(engine::Engine& e, const parser::Cmd& c) {
-    const auto& x = std::get<cmd_nodes::Exists>(c);
+inline io::Reply Exec(engine::Engine& e, const cmd_nodes::Exists& x) {
     int64_t count = 0;
     for (const auto& key : x.keys) {
         if (e.ExistsKey(key)) {
@@ -35,9 +40,6 @@ io::Reply Exec(engine::Engine& e, const parser::Cmd& c) {
     return io::MakeInt(count);
 }
 
-struct Trait {
-    using Node = cmd_nodes::Exists;
-    static constexpr parser::CommandEntry kEntry{"EXISTS", {1, parser::kUnbounded}, &Build, &Exec};
-};
+using Trait = meta::CommandTrait<cmd_nodes::Exists, "EXISTS", {1, parser::kUnbounded}, &Build, &Exec>;
 
 }  // namespace valkey::commands::exists

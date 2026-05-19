@@ -2,24 +2,32 @@
 
 #include <algorithm>
 #include <cstdint>
+#include <deque>
 #include <expected>
 #include <span>
 #include <utility>
-#include <variant>
 #include <vector>
 
 #include "engine/engine.hpp"
 #include "engine/replies.hpp"
 #include "io/reply.hpp"
-#include "parser/commands.hpp"
+#include "meta/command_trait.hpp"
 #include "parser/lexer/types.hpp"
-#include "parser/registry_types.hpp"
 #include "parser/token_extract.hpp"
-#include "storage/value.hpp"
+
+namespace valkey::cmd_nodes {
+
+struct LRange {
+    std::string key;
+    int64_t start;
+    int64_t stop;
+};
+
+}  // namespace valkey::cmd_nodes
 
 namespace valkey::commands::lrange {
 
-std::expected<parser::Cmd, parser::ParseError> Build(
+inline std::expected<cmd_nodes::LRange, parser::ParseError> Build(
     std::span<const parser::Token> args) {
     auto k = parser::TokenToString(args[0], 1);
     if (!k) {
@@ -36,9 +44,8 @@ std::expected<parser::Cmd, parser::ParseError> Build(
     return cmd_nodes::LRange{std::move(*k), *start, *stop};
 }
 
-io::Reply Exec(engine::Engine& e, const parser::Cmd& c) {
-    const auto& x = std::get<cmd_nodes::LRange>(c);
-    auto [lst, st] = e.As<storage::List>(x.key);
+inline io::Reply Exec(engine::Engine& e, const cmd_nodes::LRange& x) {
+    auto [lst, st] = e.As<std::deque<std::string>>(x.key);
     if (st == engine::Engine::TypeStatus::kWrongType) {
         return engine::WrongTypeReply();
     }
@@ -68,9 +75,6 @@ io::Reply Exec(engine::Engine& e, const parser::Cmd& c) {
     return io::MakeArray(std::move(items));
 }
 
-struct Trait {
-    using Node = cmd_nodes::LRange;
-    static constexpr parser::CommandEntry kEntry{"LRANGE", {3, 3}, &Build, &Exec};
-};
+using Trait = meta::CommandTrait<cmd_nodes::LRange, "LRANGE", {3, 3}, &Build, &Exec>;
 
 }  // namespace valkey::commands::lrange

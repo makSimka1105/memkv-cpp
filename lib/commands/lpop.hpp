@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
+#include <deque>
 #include <expected>
 #include <optional>
 #include <span>
@@ -13,15 +14,22 @@
 #include "engine/engine.hpp"
 #include "engine/replies.hpp"
 #include "io/reply.hpp"
-#include "parser/commands.hpp"
+#include "meta/command_trait.hpp"
 #include "parser/lexer/types.hpp"
-#include "parser/registry_types.hpp"
 #include "parser/token_extract.hpp"
-#include "storage/value.hpp"
+
+namespace valkey::cmd_nodes {
+
+struct LPop {
+    std::string key;
+    std::optional<int64_t> count;
+};
+
+}  // namespace valkey::cmd_nodes
 
 namespace valkey::commands::lpop {
 
-std::expected<parser::Cmd, parser::ParseError> Build(
+inline std::expected<cmd_nodes::LPop, parser::ParseError> Build(
     std::span<const parser::Token> args) {
     auto k = parser::TokenToString(args[0], 1);
     if (!k) {
@@ -38,14 +46,13 @@ std::expected<parser::Cmd, parser::ParseError> Build(
     return cmd_nodes::LPop{std::move(*k), count};
 }
 
-io::Reply Exec(engine::Engine& e, const parser::Cmd& c) {
-    const auto& x = std::get<cmd_nodes::LPop>(c);
+inline io::Reply Exec(engine::Engine& e, const cmd_nodes::LPop& x) {
     const int64_t want = x.count.value_or(1);
     if (want < 0) {
         return io::MakeErr("ERR value is not an integer or out of range");
     }
     std::vector<std::string> out;
-    auto st = e.Mutate<storage::List>(x.key, [&](storage::List& lst) {
+    auto st = e.Mutate<std::deque<std::string>>(x.key, [&](std::deque<std::string>& lst) {
         const int64_t n = std::min(want, static_cast<int64_t>(lst.size()));
         out.reserve(static_cast<size_t>(n));
         for (int64_t i = 0; i < n; ++i) {
@@ -70,9 +77,6 @@ io::Reply Exec(engine::Engine& e, const parser::Cmd& c) {
     return io::MakeArray(std::move(items));
 }
 
-struct Trait {
-    using Node = cmd_nodes::LPop;
-    static constexpr parser::CommandEntry kEntry{"LPOP", {1, 2}, &Build, &Exec};
-};
+using Trait = meta::CommandTrait<cmd_nodes::LPop, "LPOP", {1, 2}, &Build, &Exec>;
 
 }  // namespace valkey::commands::lpop
