@@ -2,45 +2,8 @@ target_sources(valkey_core
     INTERFACE
     FILE_SET HEADERS
     FILES
-        ${CMAKE_CURRENT_SOURCE_DIR}/set.hpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/get.hpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/del.hpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/exists.hpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/strlen.hpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/append.hpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/expire.hpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/ttl.hpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/lpush.hpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/rpush.hpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/lpop.hpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/rpop.hpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/llen.hpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/lrange.hpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/lindex.hpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/lset.hpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/linsert.hpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/sadd.hpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/srem.hpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/sismember.hpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/smembers.hpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/scard.hpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/sunion.hpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/sinter.hpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/sdiff.hpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/smove.hpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/type.hpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/keys.hpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/flushdb.hpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/config.hpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/dbsize.hpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/memory_usage.hpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/zadd.hpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/zrem.hpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/zscore.hpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/zcard.hpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/zrank.hpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/zrange.hpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/zrangebyscore.hpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/zincrby.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/all.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/get.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/set.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/del.hpp
 )

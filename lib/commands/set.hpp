@@ -8,8 +8,8 @@
 #include "engine/replies.hpp"
 #include "io/reply.hpp"
 #include "meta/command_trait.hpp"
-#include "parser/lexer/types.hpp"
-#include "parser/token_extract.hpp"
+#include "lexer/types.hpp"
+#include "parser/token_convert.hpp"
 
 namespace valkey::cmd_nodes {
 

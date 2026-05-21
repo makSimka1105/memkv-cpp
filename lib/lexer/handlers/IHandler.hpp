@@ -8,10 +8,10 @@
 #include <string_view>
 #include <utility>
 
-#include "types.hpp"
+#include "lexer/types.hpp"
 
 namespace valkey::parser {
-  
+
 using HandleResult = std::expected<std::optional<LexMatch>, LexError>;
 
 class IHandler {

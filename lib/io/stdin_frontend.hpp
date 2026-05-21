@@ -6,7 +6,7 @@
 #include "engine/engine.hpp"
 #include "engine/interpreter.hpp"
 #include "io/human.hpp"
-#include "parser/lexer.hpp"
+#include "lexer/lexer.hpp"
 #include "parser/parser.hpp"
 
 namespace valkey::io {

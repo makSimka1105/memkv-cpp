@@ -4,9 +4,8 @@
 #include <optional>
 #include <string_view>
 
-#include "IHandler.hpp"
-#include "types.hpp"
-#include "utils.hpp"
+#include "lexer/handlers/IHandler.hpp"
+#include "lexer/handlers/utils.hpp"
 
 namespace valkey::parser {
 

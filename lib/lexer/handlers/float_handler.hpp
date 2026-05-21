@@ -2,28 +2,26 @@
 
 #include <charconv>
 #include <cstddef>
-#include <cstdint>
 #include <optional>
 #include <string_view>
 #include <system_error>
 
-#include "IHandler.hpp"
-#include "utils.hpp"
-#include "types.hpp"
+#include "lexer/handlers/IHandler.hpp"
+#include "lexer/handlers/utils.hpp"
 
 namespace valkey::parser {
 
-class IntHandler : public IHandler {
+class FloatHandler : public IHandler {
 protected:
     HandleResult TryHandle(std::string_view input, size_t pos) override {
         size_t end = detail::WordEndPos(input, pos);
         std::string_view bare = input.substr(pos, end - pos);
-        int64_t value = 0;
+        double value = 0.0;
         auto res = std::from_chars(bare.data(), bare.data() + bare.size(), value);
         if (res.ec != std::errc{} || res.ptr != bare.data() + bare.size()) {
             return std::nullopt;
         }
-        return LexMatch{Token{TkInt{value}}, end};
+        return LexMatch{Token{TkFloat{value}}, end};
     }
 };
 

@@ -1,23 +1,14 @@
 #pragma once
 
 #include <cstddef>
-#include <expected>
-#include <optional>
 #include <string>
 #include <string_view>
 #include <utility>
 
-#include "IHandler.hpp"
-#include "utils.hpp"
-#include "types.hpp"
+#include "lexer/handlers/IHandler.hpp"
+#include "lexer/handlers/utils.hpp"
 
 namespace valkey::parser {
-
-namespace detail {
-
-
-
-}  // namespace detail
 
 class QuotedStringHandler : public IHandler {
 protected:

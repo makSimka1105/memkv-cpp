@@ -5,7 +5,7 @@
 #include <utility>
 #include <vector>
 
-#include "IHandler.hpp"
+#include "lexer/handlers/IHandler.hpp"
 
 namespace valkey::parser {
 

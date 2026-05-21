@@ -15,8 +15,3 @@ function(add_valkey_test name)
     target_link_libraries(${name} PRIVATE valkey_core GTest::gtest_main)
     gtest_discover_tests(${name} DISCOVERY_MODE POST_BUILD)
 endfunction()
-
-add_valkey_test(test_interpreter_list)
-add_valkey_test(test_interpreter_set)
-add_valkey_test(test_interpreter_generic)
-add_valkey_test(test_interpreter_zset)

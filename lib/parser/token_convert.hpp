@@ -6,21 +6,15 @@
 #include <span>
 #include <string>
 #include <string_view>
-#include <utility>
-#include <variant>
 #include <vector>
 
+#include "lexer/types.hpp"
 #include "meta/overload.hpp"
-#include "parser/lexer/types.hpp"
+#include "parser/error.hpp"
 
 namespace valkey::parser {
 
-struct ParseError {
-    std::string message;
-    size_t token_index = 0;
-};
-
-std::expected<std::string, ParseError> TokenToString(const Token& tok, size_t idx) {
+inline std::expected<std::string, ParseError> TokenToString(const Token& tok, size_t idx) {
     return std::visit(
         meta::Overload{
             [](const TkWord& w) -> std::expected<std::string, ParseError> { return w.text; },
@@ -41,18 +35,19 @@ std::expected<std::string, ParseError> TokenToString(const Token& tok, size_t id
         tok);
 }
 
-std::expected<int64_t, ParseError> TokenToInt(const Token& tok, size_t idx) {
+inline std::expected<int64_t, ParseError> TokenToInt(const Token& tok, size_t idx) {
     return std::visit(
         meta::Overload{
             [](const TkInt& i) -> std::expected<int64_t, ParseError> { return i.value; },
             [idx](const auto&) -> std::expected<int64_t, ParseError> {
-                return std::unexpected(ParseError{"expected integer", idx});
+                return std::unexpected(
+                    ParseError{"ERR value is not an integer or out of range", idx});
             },
         },
         tok);
 }
 
-std::expected<double, ParseError> TokenToFloat(const Token& tok, size_t idx) {
+inline std::expected<double, ParseError> TokenToFloat(const Token& tok, size_t idx) {
     return std::visit(
         meta::Overload{
             [](const TkFloat& f) -> std::expected<double, ParseError> { return f.value; },
@@ -60,14 +55,14 @@ std::expected<double, ParseError> TokenToFloat(const Token& tok, size_t idx) {
                 return static_cast<double>(i.value);
             },
             [idx](const auto&) -> std::expected<double, ParseError> {
-                return std::unexpected(ParseError{"expected number", idx});
+                return std::unexpected(ParseError{"ERR value is not a valid float", idx});
             },
         },
         tok);
 }
 
-std::expected<std::vector<std::string>, ParseError> CollectStrings(std::span<const Token> args,
-                                                                   size_t base_index) {
+inline std::expected<std::vector<std::string>, ParseError> CollectStrings(
+    std::span<const Token> args, size_t base_index) {
     std::vector<std::string> out;
     out.reserve(args.size());
     for (size_t i = 0; i < args.size(); ++i) {
@@ -81,7 +76,7 @@ std::expected<std::vector<std::string>, ParseError> CollectStrings(std::span<con
 }
 
 constexpr char ToUpper(char c) {
-    return (c >= 'a' && c <= 'z') ? (c - 'a' + 'A') : (c);
+    return (c >= 'a' && c <= 'z') ? static_cast<char>(c - 'a' + 'A') : c;
 }
 
 constexpr bool CaseEqual(std::string_view a, std::string_view b) {

@@ -3,13 +3,15 @@
 #include <expected>
 #include <span>
 #include <string>
+#include <string_view>
 #include <variant>
 
 #include "commands/all.hpp"
+#include "lexer/types.hpp"
 #include "meta/type_list.hpp"
 #include "parser/cmd.hpp"
-#include "parser/lexer/types.hpp"
-#include "parser/token_extract.hpp"
+#include "parser/error.hpp"
+#include "parser/token_convert.hpp"
 
 namespace valkey::parser {
 
@@ -36,14 +38,14 @@ std::expected<Cmd, ParseError> ParseImpl(std::string_view name, std::span<const 
           }
           return true;
       }()) ||
-      ...);
+     ...);
 
     return result;
 }
 
 }  // namespace detail
 
-std::expected<Cmd, ParseError> Parse(std::span<const Token> tokens) {
+inline std::expected<Cmd, ParseError> Parse(std::span<const Token> tokens) {
     while (!tokens.empty() && std::holds_alternative<TkEof>(tokens.back())) {
         tokens = tokens.first(tokens.size() - 1);
     }
