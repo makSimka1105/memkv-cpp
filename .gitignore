@@ -45,6 +45,9 @@ Build/
 build-*/
 .clang-format
 .clang-tidy
+.clangd
+coverage.info
+coverage_report
 
 # CMake generated files
 CMakeFiles/
