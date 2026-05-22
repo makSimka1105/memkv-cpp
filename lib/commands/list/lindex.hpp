@@ -1,0 +1,42 @@
+#pragma once
+#include <cstdint>
+#include <deque>
+#include <string>
+#include "engine/engine.hpp"
+#include "engine/replies.hpp"
+#include "io/reply.hpp"
+#include "meta/command_tree.hpp"
+#include "schema/rule.hpp"
+#include "schema/schema.hpp"
+#include "schema/strategies/arg.hpp"
+
+namespace valkey::commands {
+
+struct LIndex {
+    std::string key;
+    int64_t index;
+};
+
+using LIndexSchema = schema::Schema<LIndex,
+    schema::Bind<&LIndex::key, schema::Arg<std::string>>,
+    schema::Bind<&LIndex::index, schema::Arg<int64_t>>>;
+
+io::Reply ExecLIndex(engine::Engine& e, const LIndex& x) {
+    auto [lst, st] = e.As<std::deque<std::string>>(x.key);
+    if (st == engine::Engine::TypeStatus::kWrongType) {
+        return engine::WrongTypeReply();
+    }
+    if (st == engine::Engine::TypeStatus::kMissing) {
+        return io::MakeNil();
+    }
+    const int64_t len = lst->size();
+    int64_t idx = x.index < 0 ? len + x.index : x.index;
+    if (idx < 0 || idx >= len) {
+        return io::MakeNil();
+    }
+    return io::MakeBulk((*lst)[idx]);
+}
+
+using LIndexTrait = CommandTrait<"LINDEX", LIndexSchema, &ExecLIndex>;
+
+}  // namespace valkey::commands

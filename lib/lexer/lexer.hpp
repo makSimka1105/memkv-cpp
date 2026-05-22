@@ -5,6 +5,7 @@
 #include <memory>
 #include <string_view>
 #include <utility>
+#include <variant>
 #include <vector>
 
 #include "lexer/handlers/chain_builder.hpp"
@@ -48,7 +49,7 @@ private:
     std::unique_ptr<IHandler> chain_;
 };
 
-inline std::expected<std::vector<Token>, LexError> Tokenize(std::string_view input) {
+std::expected<std::vector<Token>, LexError> Tokenize(std::string_view input) {
     return Lexer{ChainBuilder{}
                      .Add<WhitespaceHandler>()
                      .Add<QuotedStringHandler>()

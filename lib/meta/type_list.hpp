@@ -3,7 +3,7 @@
 #include <type_traits>
 #include <variant>
 
-namespace valkey::meta {
+namespace valkey {
 
 template <class... Traits>
 struct TraitsList {};
@@ -39,4 +39,4 @@ using VariantFromList = typename detail::VariantFromListImpl<L>::type;
 template <class T, class L>
 using TraitForT = typename detail::TraitForTImpl<T, L>::type;
 
-}  // namespace valkey::meta
+}  // namespace valkey

@@ -8,11 +8,11 @@
 
 namespace valkey::parser::detail {
 
-inline bool IsWhitespace(char c) {
+bool IsWhitespace(char c) {
     return c == ' ' || c == '\t' || c == '\n' || c == '\r';
 }
 
-inline size_t WordEndPos(std::string_view input, size_t pos) {
+size_t WordEndPos(std::string_view input, size_t pos) {
     size_t end = pos;
     while (end < input.size() && !IsWhitespace(input[end]) && input[end] != '"') {
         ++end;
@@ -20,7 +20,7 @@ inline size_t WordEndPos(std::string_view input, size_t pos) {
     return end;
 }
 
-inline std::expected<char, LexError> ProcessEscape(std::string_view input, size_t pos) {
+std::expected<char, LexError> ProcessEscape(std::string_view input, size_t pos) {
     switch (input[pos]) {
         case 'n':
             return '\n';

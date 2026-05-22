@@ -8,6 +8,6 @@
 
 namespace valkey::stored_types {
 
-using AllStoredTypes = meta::TraitsList<string::Trait,list::Trait,set::Trait,zset::Trait>;
+using AllStoredTypes = TraitsList<string::Trait, list::Trait, set::Trait, zset::Trait>;
 
 }  // namespace valkey::stored_types

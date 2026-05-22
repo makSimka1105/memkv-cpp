@@ -6,6 +6,8 @@
 #include <span>
 #include <string>
 #include <string_view>
+#include <utility>
+#include <variant>
 #include <vector>
 
 #include "lexer/types.hpp"
@@ -14,9 +16,9 @@
 
 namespace valkey::parser {
 
-inline std::expected<std::string, ParseError> TokenToString(const Token& tok, size_t idx) {
+std::expected<std::string, ParseError> TokenToString(const Token& tok, size_t idx) {
     return std::visit(
-        meta::Overload{
+        Overload{
             [](const TkWord& w) -> std::expected<std::string, ParseError> { return w.text; },
             [](const TkInt& i) -> std::expected<std::string, ParseError> {
                 return std::to_string(i.value);
@@ -35,9 +37,9 @@ inline std::expected<std::string, ParseError> TokenToString(const Token& tok, si
         tok);
 }
 
-inline std::expected<int64_t, ParseError> TokenToInt(const Token& tok, size_t idx) {
+std::expected<int64_t, ParseError> TokenToInt(const Token& tok, size_t idx) {
     return std::visit(
-        meta::Overload{
+        Overload{
             [](const TkInt& i) -> std::expected<int64_t, ParseError> { return i.value; },
             [idx](const auto&) -> std::expected<int64_t, ParseError> {
                 return std::unexpected(
@@ -47,9 +49,9 @@ inline std::expected<int64_t, ParseError> TokenToInt(const Token& tok, size_t id
         tok);
 }
 
-inline std::expected<double, ParseError> TokenToFloat(const Token& tok, size_t idx) {
+std::expected<double, ParseError> TokenToFloat(const Token& tok, size_t idx) {
     return std::visit(
-        meta::Overload{
+        Overload{
             [](const TkFloat& f) -> std::expected<double, ParseError> { return f.value; },
             [](const TkInt& i) -> std::expected<double, ParseError> {
                 return static_cast<double>(i.value);
@@ -61,7 +63,7 @@ inline std::expected<double, ParseError> TokenToFloat(const Token& tok, size_t i
         tok);
 }
 
-inline std::expected<std::vector<std::string>, ParseError> CollectStrings(
+std::expected<std::vector<std::string>, ParseError> CollectStrings(
     std::span<const Token> args, size_t base_index) {
     std::vector<std::string> out;
     out.reserve(args.size());

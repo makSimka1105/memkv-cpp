@@ -5,22 +5,20 @@
 #include "engine/engine.hpp"
 #include "engine/replies.hpp"
 #include "io/reply.hpp"
-#include "meta/command_trait.hpp"
+#include "meta/command_tree.hpp"
+#include "schema/rule.hpp"
+#include "schema/schema.hpp"
+#include "schema/strategies/arg.hpp"
 
-namespace valkey::cmd_nodes {
+namespace valkey::commands {
 
 struct Get {
     std::string key;
 };
 
-}  // namespace valkey::cmd_nodes
+using GetSchema = schema::Schema<Get, schema::Bind<&Get::key, schema::Arg<std::string>>>;
 
-namespace valkey::commands::get {
-
-
-void Build();
-
-inline io::Reply Exec(engine::Engine& e, const cmd_nodes::Get& x) {
+io::Reply ExecGet(engine::Engine& e, const Get& x) {
     auto [s, st] = e.As<std::string>(x.key);
     if (st == engine::Engine::TypeStatus::kWrongType) {
         return engine::WrongTypeReply();
@@ -31,6 +29,6 @@ inline io::Reply Exec(engine::Engine& e, const cmd_nodes::Get& x) {
     return io::MakeBulk(*s);
 }
 
-using Trait = meta::CommandTrait<cmd_nodes::Get, "GET", {1, 1}, &Build, &Exec>;
+using GetTrait = CommandTrait<"GET", GetSchema, &ExecGet>;
 
-}  // namespace valkey::commands::get
+}  // namespace valkey::commands

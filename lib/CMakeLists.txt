@@ -10,7 +10,7 @@ target_sources(valkey_core
 
 add_subdirectory(meta)
 add_subdirectory(lexer)
-# add_subdirectory(schema)
+add_subdirectory(schema)
 add_subdirectory(structures)
 add_subdirectory(stored_types)
 add_subdirectory(storage)

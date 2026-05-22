@@ -5,7 +5,6 @@
 #include <cstdint>
 #include <string>
 #include <string_view>
-#include <type_traits>
 #include <utility>
 #include <variant>
 #include <vector>
@@ -47,19 +46,18 @@ public:
         return storage_.Del(key);
     }
 
-    bool ExistsKey(std::string_view key) { return storage_.Get(key) != nullptr; }
+    bool ExistsKey(std::string_view key) { return storage_.Exists(key); }
 
     bool ExpireKey(std::string_view key, std::chrono::seconds ttl) {
         return storage_.Expire(key, std::chrono::steady_clock::now() + ttl);
     }
 
-    int64_t TtlSeconds(std::string_view key) const {
-        return static_cast<int64_t>(storage_.TtlSeconds(key));
-    }
+    int64_t TtlSeconds(std::string_view key) { return storage_.TtlSeconds(key); }
 
-    size_t DbSize() const { return storage_.DbSize(); }
+    size_t DbSize() { return storage_.DbSize(); }
     size_t UsedMemory() const { return mem_.Used(); }
     size_t MaxMemory() const { return mem_.Limit(); }
+
     void SetMaxMemory(size_t bytes) {
         cfg_.maxmemory = bytes;
         mem_.SetLimit(bytes);
@@ -72,29 +70,31 @@ public:
     }
 
     std::string_view TypeOf(std::string_view key) {
-        const auto* value_var = storage_.Get(key);
-        if (value_var == nullptr) {
+        const auto* var = storage_.Get(key);
+        if (var == nullptr) {
             return "none";
         }
         return std::visit(
             [](const auto& val) -> std::string_view {
                 using T = std::decay_t<decltype(val)>;
-                return meta::TraitForT<T, stored_types::AllStoredTypes>::kName;
+                return TraitForT<T, stored_types::AllStoredTypes>::kName;
             },
-            *value_var);
+            *var);
     }
 
-    std::vector<std::string> Keys(std::string_view pattern) { return storage_.Keys(pattern); }
+    std::vector<std::string> Keys(std::string_view pattern) {
+        return storage_.Keys(pattern);
+    }
 
     size_t MemoryUsage(std::string_view key) { return ExistingBytes(key); }
 
     template <typename T>
     std::pair<const T*, TypeStatus> As(std::string_view key) {
-        const auto* value_var = storage_.Get(key);
-        if (value_var == nullptr) {
+        const auto* var = storage_.Get(key);
+        if (var == nullptr) {
             return {nullptr, TypeStatus::kMissing};
         }
-        const auto* t = std::get_if<T>(value_var);
+        const auto* t = std::get_if<T>(var);
         if (t == nullptr) {
             return {nullptr, TypeStatus::kWrongType};
         }
@@ -103,43 +103,42 @@ public:
 
     template <typename T, typename Fn>
     TypeStatus Mutate(std::string_view key, Fn&& fn) {
-        auto* value_var = storage_.GetMutable(key);
-        if (value_var == nullptr) {
+        auto* var = storage_.GetMutable(key);
+        if (var == nullptr) {
             return TypeStatus::kMissing;
         }
-        auto* t = std::get_if<T>(value_var);
+        auto* t = std::get_if<T>(var);
         if (t == nullptr) {
             return TypeStatus::kWrongType;
         }
-        const size_t old_bytes = StringBytes(key) + SizeOf(*t);
+        const size_t old_bytes = ValBytes(key, *t);
         std::forward<Fn>(fn)(*t);
+        mem_.Sub(old_bytes);
         if (IsEmpty(*t)) {
-            mem_.Sub(old_bytes);
             storage_.Del(key);
         } else {
-            mem_.Sub(old_bytes);
-            mem_.Add(StringBytes(key) + SizeOf(*t));
+            mem_.Add(ValBytes(key, *t));
         }
         return TypeStatus::kOk;
     }
 
     template <typename T, typename Fn>
     UpsertStatus Upsert(std::string key, Fn&& fn) {
-        auto* value_var = storage_.GetMutable(key);
-        if (value_var != nullptr) {
-            auto* t = std::get_if<T>(value_var);
+        auto* var = storage_.GetMutable(key);
+        if (var != nullptr) {
+            auto* t = std::get_if<T>(var);
             if (t == nullptr) {
                 return UpsertStatus::kWrongType;
             }
-            const size_t old_bytes = StringBytes(key) + SizeOf(*t);
+            const size_t old_bytes = ValBytes(key, *t);
             std::forward<Fn>(fn)(*t);
             mem_.Sub(old_bytes);
-            mem_.Add(StringBytes(key) + SizeOf(*t));
+            mem_.Add(ValBytes(key, *t));
             return UpsertStatus::kOk;
         }
         T fresh{};
         std::forward<Fn>(fn)(fresh);
-        const size_t need = StringBytes(key) + SizeOf(fresh);
+        const size_t need = ValBytes(key, fresh);
         if (mem_.WouldOverflow(need)) {
             return UpsertStatus::kOom;
         }
@@ -153,13 +152,17 @@ private:
         return sizeof(std::string) + sv.size();
     }
 
+    template <class T>
+    size_t ValBytes(std::string_view key, const T& val) {
+        return StringBytes(key) + SizeOf(val);
+    }
+
     size_t ExistingBytes(std::string_view key) {
-        const auto* value_var = storage_.Get(key);
-        if (value_var == nullptr) {
+        const auto* var = storage_.Get(key);
+        if (var == nullptr) {
             return 0;
         }
-        return StringBytes(key) +
-               std::visit([](const auto& val) { return engine::SizeOf(val); }, *value_var);
+        return std::visit([&](const auto& val) { return ValBytes(key, val); }, *var);
     }
 
     Config cfg_;

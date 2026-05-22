@@ -18,24 +18,52 @@ namespace valkey::parser {
 namespace detail {
 
 template <class... Traits>
-std::expected<Cmd, ParseError> ParseImpl(std::string_view name, std::span<const Token> args,
-                                          meta::TraitsList<Traits...>) {
-    std::expected<Cmd, ParseError> result =
-        std::unexpected(ParseError{"unknown command: " + std::string(name), 0});
+std::expected<Cmd, ParseError> DispatchList(std::span<const Token>, std::string_view,
+                                            std::string_view, TraitsList<Traits...>);
 
-    ((CaseEqual(Traits::kName, name) &&
+template <class Trait>
+std::expected<Cmd, ParseError> DispatchNode(std::span<const Token> tokens,
+                                            std::string_view full_name) {
+    if constexpr (!Trait::kIsGroup) {
+        return Trait::SchemaType::Parse(tokens, full_name);
+    } else {
+        if (tokens.empty()) {
+            if (full_name.empty()) {
+                return std::unexpected(ParseError{"ERR empty input", 0});
+            }
+            std::string lower(full_name);
+            for (char& c : lower) {
+                if (c >= 'A' && c <= 'Z') {
+                    c = static_cast<char>(c - 'A' + 'a');
+                }
+            }
+            return std::unexpected(
+                ParseError{"ERR wrong number of arguments for '" + lower + "' command", 0});
+        }
+        const auto* sub = std::get_if<TkWord>(&tokens[0]);
+        if (!sub) {
+            return std::unexpected(ParseError{"ERR syntax error", 0});
+        }
+        return DispatchList(tokens.subspan(1), sub->text, full_name,
+                            typename Trait::ChildrenList{});
+    }
+}
+
+template <class... Traits>
+std::expected<Cmd, ParseError> DispatchList(std::span<const Token> tokens, std::string_view word,
+                                            std::string_view full_prefix,
+                                            TraitsList<Traits...>) {
+    std::expected<Cmd, ParseError> result = std::unexpected(ParseError{
+        (full_prefix.empty() ? "ERR unknown command '" : "ERR unknown subcommand '") +
+            std::string(word) + "'",
+        0});
+
+    ((CaseEqual(Traits::kName, word) &&
       [&] {
-          if (args.size() < Traits::kArity.min || args.size() > Traits::kArity.max) {
-              result = std::unexpected(
-                  ParseError{"wrong number of arguments for " + std::string(name), 0});
-          } else {
-              auto r = Traits::kBuildFn(args);
-              if (r) {
-                  result = Cmd{std::move(*r)};
-              } else {
-                  result = std::unexpected(r.error());
-              }
-          }
+          std::string full_name = full_prefix.empty()
+                                      ? std::string(Traits::kName)
+                                      : std::string(full_prefix) + " " + std::string(Traits::kName);
+          result = DispatchNode<Traits>(tokens, full_name);
           return true;
       }()) ||
      ...);
@@ -45,21 +73,11 @@ std::expected<Cmd, ParseError> ParseImpl(std::string_view name, std::span<const 
 
 }  // namespace detail
 
-inline std::expected<Cmd, ParseError> Parse(std::span<const Token> tokens) {
+std::expected<Cmd, ParseError> Parse(std::span<const Token> tokens) {
     while (!tokens.empty() && std::holds_alternative<TkEof>(tokens.back())) {
         tokens = tokens.first(tokens.size() - 1);
     }
-
-    if (tokens.empty()) {
-        return std::unexpected(ParseError{"empty input", 0});
-    }
-
-    const auto* name_tok = std::get_if<TkWord>(&tokens[0]);
-    if (name_tok == nullptr) {
-        return std::unexpected(ParseError{"command name must be a word", 0});
-    }
-
-    return detail::ParseImpl(name_tok->text, tokens.subspan(1), commands::AllCommandsTraits{});
+    return detail::DispatchNode<commands::RootGroup>(tokens, "");
 }
 
 }  // namespace valkey::parser

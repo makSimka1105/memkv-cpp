@@ -10,7 +10,7 @@
 
 namespace valkey::io::human {
 
-inline void Write(std::ostream& out, const Reply& r);
+void Write(std::ostream& out, const Reply& r);
 
 namespace detail {
 
@@ -23,7 +23,7 @@ void WriteItem(std::ostream& out, size_t one_based_idx, const Reply& r) {
 
 void Write(std::ostream& out, const Reply& r) {
     std::visit(
-        meta::Overload{
+        Overload{
             [&](const SimpleStr& s) { out << s.value << '\n'; },
             [&](const BulkStr& b) { out << '"' << b.value << '"' << '\n'; },
             [&](const Int& i) { out << "(int) " << i.value << '\n'; },

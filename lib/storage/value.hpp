@@ -5,6 +5,6 @@
 
 namespace valkey::storage {
 
-using ValueVar = meta::VariantFromList<stored_types::AllStoredTypes>;
+using ValueVar = VariantFromList<stored_types::AllStoredTypes>;
 
 }  // namespace valkey::storage

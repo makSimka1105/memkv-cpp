@@ -1,6 +1,6 @@
 #pragma once
 
-namespace valkey::meta {
+namespace valkey {
 
 template <class... Ts>
 struct Overload : Ts... {
@@ -12,4 +12,4 @@ Overload(Ts...) -> Overload<Ts...>;
 
 
 
-}  // namespace valkey::meta
+}  // namespace valkey

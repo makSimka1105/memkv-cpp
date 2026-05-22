@@ -4,18 +4,9 @@
 #include <limits>
 #include <string_view>
 
-namespace valkey::parser {
-
-struct ArityRange {
-    size_t min;
-    size_t max;
-};
+namespace valkey {
 
 constexpr size_t kUnbounded = std::numeric_limits<size_t>::max();
-
-}  // namespace valkey::parser
-
-namespace valkey::meta {
 
 template <size_t N>
 struct FixedString {
@@ -30,13 +21,4 @@ struct FixedString {
 template <size_t N>
 FixedString(const char (&)[N]) -> FixedString<N>;
 
-template <class T, FixedString Name, parser::ArityRange Arity, auto BuildFn, auto ExecFn>
-struct CommandTrait {
-    using Type = T;
-    static constexpr std::string_view kName = Name;
-    static constexpr parser::ArityRange kArity = Arity;
-    static constexpr auto kBuildFn = BuildFn;
-    static constexpr auto kExecFn = ExecFn;
-};
-
-}  // namespace valkey::meta
+}  // namespace valkey
