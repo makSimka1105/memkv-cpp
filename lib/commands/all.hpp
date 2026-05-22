@@ -36,6 +36,25 @@
 #include "transaction/discard.hpp"
 #include "transaction/exec.hpp"
 #include "transaction/multi.hpp"
+#include "zset/zadd.hpp"
+#include "zset/zrem.hpp"
+#include "zset/zscore.hpp"
+#include "zset/zcard.hpp"
+#include "zset/zrank.hpp"
+#include "zset/zrevrank.hpp"
+#include "zset/zrange.hpp"
+#include "zset/zrevrange.hpp"
+#include "zset/zrangebyscore.hpp"
+#include "zset/zincrby.hpp"
+#include "zset/zpopmin.hpp"
+#include "zset/zpopmax.hpp"
+#include "zset/zcount.hpp"
+#include "geo/geoadd.hpp"
+#include "geo/geopos.hpp"
+#include "geo/geodist.hpp"
+#include "geo/geohash_cmd.hpp"
+#include "geo/geosearch.hpp"
+#include "geo/geosearchstore.hpp"
 #include "meta/command_tree.hpp"
 
 namespace valkey::commands {
@@ -80,7 +99,26 @@ using RootGroup = CommandGroup<"",
     >,
     LeafCommand<MultiTrait>,
     LeafCommand<ExecTrait>,
-    LeafCommand<DiscardTrait>
+    LeafCommand<DiscardTrait>,
+    LeafCommand<ZAddTrait>,
+    LeafCommand<ZRemTrait>,
+    LeafCommand<ZScoreTrait>,
+    LeafCommand<ZCardTrait>,
+    LeafCommand<ZRankTrait>,
+    LeafCommand<ZRevRankTrait>,
+    LeafCommand<ZRangeTrait>,
+    LeafCommand<ZRevRangeTrait>,
+    LeafCommand<ZRangeByScoreTrait>,
+    LeafCommand<ZIncrByTrait>,
+    LeafCommand<ZPopMinTrait>,
+    LeafCommand<ZPopMaxTrait>,
+    LeafCommand<ZCountTrait>,
+    LeafCommand<GeoAddTrait>,
+    LeafCommand<GeoPosTrait>,
+    LeafCommand<GeoDistTrait>,
+    LeafCommand<GeoHashTrait>,
+    LeafCommand<GeoSearchTrait>,
+    LeafCommand<GeoSearchStoreTrait>
 >;
 
 }  // namespace valkey::commands
