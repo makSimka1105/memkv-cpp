@@ -1,7 +1,6 @@
 #pragma once
 #include <cstdint>
 #include <string>
-#include <unordered_set>
 #include "engine/engine.hpp"
 #include "engine/replies.hpp"
 #include "io/reply.hpp"
@@ -19,7 +18,7 @@ struct SCard {
 using SCardSchema = schema::Schema<SCard, schema::Bind<&SCard::key, schema::Arg<std::string>>>;
 
 io::Reply ExecSCard(engine::Engine& e, const SCard& x) {
-    auto [s, st] = e.As<std::unordered_set<std::string>>(x.key);
+    auto [s, st] = e.As<types::Set>(x.key);
     if (st == engine::Engine::TypeStatus::kWrongType) {
         return engine::WrongTypeReply();
     }

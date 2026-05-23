@@ -1,6 +1,5 @@
 #pragma once
 #include <cstdint>
-#include <deque>
 #include <string>
 #include "engine/engine.hpp"
 #include "engine/replies.hpp"
@@ -19,7 +18,7 @@ struct LLen {
 using LLenSchema = schema::Schema<LLen, schema::Bind<&LLen::key, schema::Arg<std::string>>>;
 
 io::Reply ExecLLen(engine::Engine& e, const LLen& x) {
-    auto [lst, st] = e.As<std::deque<std::string>>(x.key);
+    auto [lst, st] = e.As<types::List>(x.key);
     if (st == engine::Engine::TypeStatus::kWrongType) {
         return engine::WrongTypeReply();
     }

@@ -1,6 +1,5 @@
 #pragma once
 #include <string>
-#include <unordered_set>
 #include <vector>
 #include "engine/engine.hpp"
 #include "engine/replies.hpp"
@@ -20,16 +19,16 @@ using SInterSchema = schema::Schema<SInter,
     schema::Bind<&SInter::keys, schema::Variadic<std::string, 1>>>;
 
 io::Reply ExecSInter(engine::Engine& e, const SInter& x) {
-    auto [first, st0] = e.As<std::unordered_set<std::string>>(x.keys[0]);
+    auto [first, st0] = e.As<types::Set>(x.keys[0]);
     if (st0 == engine::Engine::TypeStatus::kWrongType) {
         return engine::WrongTypeReply();
     }
     if (st0 == engine::Engine::TypeStatus::kMissing) {
         return io::MakeArray({});
     }
-    std::unordered_set<std::string> result(*first);
+    types::Set result(*first);
     for (size_t i = 1; i < x.keys.size(); ++i) {
-        auto [s, st] = e.As<std::unordered_set<std::string>>(x.keys[i]);
+        auto [s, st] = e.As<types::Set>(x.keys[i]);
         if (st == engine::Engine::TypeStatus::kWrongType) {
             return engine::WrongTypeReply();
         }

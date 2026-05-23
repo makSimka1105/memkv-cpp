@@ -12,7 +12,6 @@
 #include "schema/rule.hpp"
 #include "schema/schema.hpp"
 #include "schema/strategies/arg.hpp"
-#include "structures/zset.hpp"
 
 namespace valkey::commands {
 
@@ -52,7 +51,7 @@ io::Reply ExecZCount(engine::Engine& e, const ZCount& x) {
         return io::MakeErr("ERR min or max is not a float");
     }
 
-    auto [ptr, st] = e.As<structures::ZSet>(x.key);
+    auto [ptr, st] = e.As<types::ZSet>(x.key);
     if (st == engine::Engine::TypeStatus::kMissing) {
         return io::MakeInt(0);
     }

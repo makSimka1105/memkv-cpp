@@ -14,7 +14,7 @@
 #include "meta/type_list.hpp"
 #include "storage/storage.hpp"
 #include "storage/value.hpp"
-#include "stored_types/all.hpp"
+#include "types/all.hpp"
 
 namespace valkey::engine {
 
@@ -77,7 +77,7 @@ public:
         return std::visit(
             [](const auto& val) -> std::string_view {
                 using T = std::decay_t<decltype(val)>;
-                return TraitForT<T, stored_types::AllStoredTypes>::kName;
+                return TraitForT<T, types::AllStoredTypes>::kName;
             },
             *var);
     }

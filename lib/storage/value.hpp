@@ -1,10 +1,10 @@
 #pragma once
 
 #include "meta/type_list.hpp"
-#include "stored_types/all.hpp"
+#include "types/all.hpp"
 
 namespace valkey::storage {
 
-using ValueVar = VariantFromList<stored_types::AllStoredTypes>;
+using ValueVar = VariantFromList<types::AllStoredTypes>;
 
 }  // namespace valkey::storage

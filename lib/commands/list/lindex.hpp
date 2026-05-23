@@ -1,6 +1,5 @@
 #pragma once
 #include <cstdint>
-#include <deque>
 #include <string>
 #include "engine/engine.hpp"
 #include "engine/replies.hpp"
@@ -22,7 +21,7 @@ using LIndexSchema = schema::Schema<LIndex,
     schema::Bind<&LIndex::index, schema::Arg<int64_t>>>;
 
 io::Reply ExecLIndex(engine::Engine& e, const LIndex& x) {
-    auto [lst, st] = e.As<std::deque<std::string>>(x.key);
+    auto [lst, st] = e.As<types::List>(x.key);
     if (st == engine::Engine::TypeStatus::kWrongType) {
         return engine::WrongTypeReply();
     }

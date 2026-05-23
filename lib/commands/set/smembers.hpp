@@ -1,6 +1,5 @@
 #pragma once
 #include <string>
-#include <unordered_set>
 #include <vector>
 #include "engine/engine.hpp"
 #include "engine/replies.hpp"
@@ -20,7 +19,7 @@ using SMembersSchema = schema::Schema<SMembers,
     schema::Bind<&SMembers::key, schema::Arg<std::string>>>;
 
 io::Reply ExecSMembers(engine::Engine& e, const SMembers& x) {
-    auto [s, st] = e.As<std::unordered_set<std::string>>(x.key);
+    auto [s, st] = e.As<types::Set>(x.key);
     if (st == engine::Engine::TypeStatus::kWrongType) {
         return engine::WrongTypeReply();
     }

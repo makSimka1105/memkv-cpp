@@ -4,18 +4,18 @@
 #include <cstddef>
 
 #include "meta/type_list.hpp"
-#include "stored_types/all.hpp"
+#include "types/all.hpp"
 
 namespace valkey::engine {
 
 template <class T>
 size_t SizeOf(const T& val) {
-    return TraitForT<T, stored_types::AllStoredTypes>::SizeOf(val);
+    return TraitForT<T, types::AllStoredTypes>::SizeOf(val);
 }
 
 template <class T>
 bool IsEmpty(const T& val) {
-    return TraitForT<T, stored_types::AllStoredTypes>::IsEmpty(val);
+    return TraitForT<T, types::AllStoredTypes>::IsEmpty(val);
 }
 
 class MemoryTracker {

@@ -10,7 +10,6 @@
 #include "schema/strategies/arg.hpp"
 #include "schema/strategies/variadic.hpp"
 #include "structures/geohash.hpp"
-#include "structures/zset.hpp"
 
 namespace valkey::commands {
 
@@ -24,7 +23,7 @@ using GeoHashSchema = schema::Schema<GeoHash,
     schema::Bind<&GeoHash::members, schema::Variadic<std::string, 1>>>;
 
 io::Reply ExecGeoHash(engine::Engine& e, const GeoHash& x) {
-    auto [ptr, st] = e.As<structures::ZSet>(x.key);
+    auto [ptr, st] = e.As<types::ZSet>(x.key);
     if (st == engine::Engine::TypeStatus::kWrongType) {
         return engine::WrongTypeReply();
     }

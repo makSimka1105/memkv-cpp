@@ -8,7 +8,6 @@
 #include "schema/rule.hpp"
 #include "schema/schema.hpp"
 #include "schema/strategies/arg.hpp"
-#include "structures/zset.hpp"
 
 namespace valkey::commands {
 
@@ -20,7 +19,7 @@ using ZCardSchema = schema::Schema<ZCard,
     schema::Bind<&ZCard::key, schema::Arg<std::string>>>;
 
 io::Reply ExecZCard(engine::Engine& e, const ZCard& x) {
-    auto [ptr, st] = e.As<structures::ZSet>(x.key);
+    auto [ptr, st] = e.As<types::ZSet>(x.key);
     if (st == engine::Engine::TypeStatus::kMissing) {
         return io::MakeInt(0);
     }

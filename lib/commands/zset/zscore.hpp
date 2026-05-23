@@ -8,7 +8,6 @@
 #include "schema/rule.hpp"
 #include "schema/schema.hpp"
 #include "schema/strategies/arg.hpp"
-#include "structures/zset.hpp"
 
 namespace valkey::commands {
 
@@ -22,7 +21,7 @@ using ZScoreSchema = schema::Schema<ZScore,
     schema::Bind<&ZScore::member, schema::Arg<std::string>>>;
 
 io::Reply ExecZScore(engine::Engine& e, const ZScore& x) {
-    auto [ptr, st] = e.As<structures::ZSet>(x.key);
+    auto [ptr, st] = e.As<types::ZSet>(x.key);
     if (st == engine::Engine::TypeStatus::kMissing) {
         return io::MakeNil();
     }

@@ -17,7 +17,6 @@
 #include "schema/strategies/one_of.hpp"
 #include "structures/geo.hpp"
 #include "structures/skiplist.hpp"
-#include "structures/zset.hpp"
 
 namespace valkey::commands {
 
@@ -56,7 +55,7 @@ io::Reply ExecGeoSearchStore(engine::Engine& e, const GeoSearchStore& x) {
     if (!structures::geo::ValidUnit(UnitOf(x.by))) {
         return io::MakeErr("unsupported unit provided. please use M, KM, FT, MI");
     }
-    auto [ptr, st] = e.As<structures::ZSet>(x.src);
+    auto [ptr, st] = e.As<types::ZSet>(x.src);
     if (st == engine::Engine::TypeStatus::kMissing) {
         e.DelKey(x.dest);
         return io::MakeInt(0);
@@ -76,7 +75,7 @@ io::Reply ExecGeoSearchStore(engine::Engine& e, const GeoSearchStore& x) {
         e.DelKey(x.dest);
         return io::MakeInt(0);
     }
-    auto status = e.Upsert<structures::ZSet>(x.dest, [&](auto& z) {
+    auto status = e.Upsert<types::ZSet>(x.dest, [&](auto& z) {
         z.scores.clear();
         z.sl = std::make_unique<structures::SkipList<double, std::string>>();
         for (const auto& h : hits) {

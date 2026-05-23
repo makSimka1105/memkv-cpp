@@ -1,6 +1,5 @@
 #pragma once
 #include <string>
-#include <unordered_set>
 #include "engine/engine.hpp"
 #include "engine/replies.hpp"
 #include "io/reply.hpp"
@@ -24,7 +23,7 @@ using SMoveSchema = schema::Schema<SMove,
 
 io::Reply ExecSMove(engine::Engine& e, const SMove& x) {
     bool removed = false;
-    auto st = e.Mutate<std::unordered_set<std::string>>(x.source, [&](auto& s) {
+    auto st = e.Mutate<types::Set>(x.source, [&](auto& s) {
         removed = s.erase(x.member) > 0;
     });
     if (st == engine::Engine::TypeStatus::kMissing) {
@@ -36,7 +35,7 @@ io::Reply ExecSMove(engine::Engine& e, const SMove& x) {
     if (!removed) {
         return io::MakeInt(0);
     }
-    auto upsert_st = e.Upsert<std::unordered_set<std::string>>(x.dest, [&](auto& s) {
+    auto upsert_st = e.Upsert<types::Set>(x.dest, [&](auto& s) {
         s.insert(x.member);
     });
     if (upsert_st == engine::Engine::UpsertStatus::kWrongType) {

@@ -10,7 +10,6 @@
 #include "schema/schema.hpp"
 #include "schema/strategies/arg.hpp"
 #include "schema/strategies/variadic.hpp"
-#include "structures/zset.hpp"
 
 namespace valkey::commands {
 
@@ -25,7 +24,7 @@ using ZRemSchema = schema::Schema<ZRem,
 
 io::Reply ExecZRem(engine::Engine& e, const ZRem& x) {
     int64_t removed = 0;
-    auto st = e.Mutate<structures::ZSet>(x.key, [&](auto& z) {
+    auto st = e.Mutate<types::ZSet>(x.key, [&](auto& z) {
         for (const auto& m : x.members) {
             auto it = z.scores.find(m);
             if (it == z.scores.end()) {

@@ -1,7 +1,6 @@
 #pragma once
 #include <cstdint>
 #include <string>
-#include <unordered_set>
 #include <vector>
 #include "engine/engine.hpp"
 #include "engine/replies.hpp"
@@ -25,7 +24,7 @@ using SAddSchema = schema::Schema<SAdd,
 
 io::Reply ExecSAdd(engine::Engine& e, const SAdd& x) {
     int64_t added = 0;
-    auto status = e.Upsert<std::unordered_set<std::string>>(x.key, [&](auto& s) {
+    auto status = e.Upsert<types::Set>(x.key, [&](auto& s) {
         for (const auto& m : x.members) {
             if (s.insert(m).second) {
                 ++added;

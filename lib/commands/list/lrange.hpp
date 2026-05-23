@@ -1,7 +1,6 @@
 #pragma once
 #include <algorithm>
 #include <cstdint>
-#include <deque>
 #include <string>
 #include <vector>
 #include "engine/engine.hpp"
@@ -26,7 +25,7 @@ using LRangeSchema = schema::Schema<LRange,
     schema::Bind<&LRange::stop, schema::Arg<int64_t>>>;
 
 io::Reply ExecLRange(engine::Engine& e, const LRange& x) {
-    auto [lst, st] = e.As<std::deque<std::string>>(x.key);
+    auto [lst, st] = e.As<types::List>(x.key);
     if (st == engine::Engine::TypeStatus::kWrongType) {
         return engine::WrongTypeReply();
     }

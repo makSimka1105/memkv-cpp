@@ -1,6 +1,5 @@
 #pragma once
 #include <cstdint>
-#include <deque>
 #include <string>
 #include "engine/engine.hpp"
 #include "engine/replies.hpp"
@@ -25,7 +24,7 @@ using LSetSchema = schema::Schema<LSet,
 
 io::Reply ExecLSet(engine::Engine& e, const LSet& x) {
     bool out_of_range = false;
-    auto st = e.Mutate<std::deque<std::string>>(x.key, [&](auto& lst) {
+    auto st = e.Mutate<types::List>(x.key, [&](auto& lst) {
         const int64_t len = lst.size();
         int64_t idx = x.index < 0 ? len + x.index : x.index;
         if (idx < 0 || idx >= len) {

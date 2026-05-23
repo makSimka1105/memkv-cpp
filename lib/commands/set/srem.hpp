@@ -1,7 +1,6 @@
 #pragma once
 #include <cstdint>
 #include <string>
-#include <unordered_set>
 #include <vector>
 #include "engine/engine.hpp"
 #include "engine/replies.hpp"
@@ -25,7 +24,7 @@ using SRemSchema = schema::Schema<SRem,
 
 io::Reply ExecSRem(engine::Engine& e, const SRem& x) {
     int64_t removed = 0;
-    auto st = e.Mutate<std::unordered_set<std::string>>(x.key, [&](auto& s) {
+    auto st = e.Mutate<types::Set>(x.key, [&](auto& s) {
         for (const auto& m : x.members) {
             if (s.erase(m)) {
                 ++removed;

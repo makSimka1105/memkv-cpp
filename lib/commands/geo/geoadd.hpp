@@ -11,7 +11,6 @@
 #include "schema/strategies/arg.hpp"
 #include "schema/strategies/repeat.hpp"
 #include "structures/geohash.hpp"
-#include "structures/zset.hpp"
 
 namespace valkey::commands {
 
@@ -38,7 +37,7 @@ io::Reply ExecGeoAdd(engine::Engine& e, const GeoAdd& x) {
         return io::MakeErr("ERR wrong number of arguments for 'geoadd' command");
     }
     int64_t added = 0;
-    auto status = e.Upsert<structures::ZSet>(x.key, [&](auto& z) {
+    auto status = e.Upsert<types::ZSet>(x.key, [&](auto& z) {
         for (const auto& entry : x.entries) {
             double score = structures::geohash::Encode(entry.lon, entry.lat);
             auto it = z.scores.find(entry.member);

@@ -11,7 +11,6 @@
 #include "schema/strategies/arg.hpp"
 #include "structures/geo.hpp"
 #include "structures/geohash.hpp"
-#include "structures/zset.hpp"
 
 namespace valkey::commands {
 
@@ -34,7 +33,7 @@ io::Reply ExecGeoDist(engine::Engine& e, const GeoDist& x) {
         return io::MakeErr("unsupported unit provided. please use M, KM, FT, MI");
     }
 
-    auto [ptr, st] = e.As<structures::ZSet>(x.key);
+    auto [ptr, st] = e.As<types::ZSet>(x.key);
     if (st == engine::Engine::TypeStatus::kMissing) {
         return io::MakeNil();
     }

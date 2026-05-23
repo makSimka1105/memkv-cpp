@@ -11,7 +11,6 @@
 #include "schema/rule.hpp"
 #include "schema/schema.hpp"
 #include "schema/strategies/arg.hpp"
-#include "structures/zset.hpp"
 
 namespace valkey::commands {
 
@@ -27,7 +26,7 @@ using ZPopMinSchema = schema::Schema<ZPopMin,
 io::Reply ExecZPopMin(engine::Engine& e, const ZPopMin& x) {
     size_t n = x.count.value_or(1);
     std::vector<io::Reply> items;
-    auto st = e.Mutate<structures::ZSet>(x.key, [&](auto& z) {
+    auto st = e.Mutate<types::ZSet>(x.key, [&](auto& z) {
         auto popped = z.sl->PopMin(n);
         items.reserve(popped.size() * 2);
         for (const auto& [score, member] : popped) {

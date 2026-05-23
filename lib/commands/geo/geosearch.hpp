@@ -20,7 +20,6 @@
 #include "schema/strategies/keyword.hpp"
 #include "schema/strategies/one_of.hpp"
 #include "structures/geo.hpp"
-#include "structures/zset.hpp"
 
 namespace valkey::commands {
 
@@ -61,7 +60,7 @@ io::Reply ExecGeoSearch(engine::Engine& e, const GeoSearch& x) {
     if (!structures::geo::ValidUnit(UnitOf(x.by))) {
         return io::MakeErr("unsupported unit provided. please use M, KM, FT, MI");
     }
-    auto [ptr, st] = e.As<structures::ZSet>(x.key);
+    auto [ptr, st] = e.As<types::ZSet>(x.key);
     if (st == engine::Engine::TypeStatus::kMissing) {
         return io::MakeArray({});
     }

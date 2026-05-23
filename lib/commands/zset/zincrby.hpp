@@ -8,7 +8,6 @@
 #include "schema/rule.hpp"
 #include "schema/schema.hpp"
 #include "schema/strategies/arg.hpp"
-#include "structures/zset.hpp"
 
 namespace valkey::commands {
 
@@ -25,7 +24,7 @@ using ZIncrBySchema = schema::Schema<ZIncrBy,
 
 io::Reply ExecZIncrBy(engine::Engine& e, const ZIncrBy& x) {
     double new_score = 0.0;
-    auto status = e.Upsert<structures::ZSet>(x.key, [&](auto& z) {
+    auto status = e.Upsert<types::ZSet>(x.key, [&](auto& z) {
         auto it = z.scores.find(x.member);
         if (it != z.scores.end()) {
             z.sl->Erase(it->second, x.member);

@@ -10,7 +10,6 @@
 #include "schema/schema.hpp"
 #include "schema/strategies/arg.hpp"
 #include "schema/strategies/repeat.hpp"
-#include "structures/zset.hpp"
 
 namespace valkey::commands {
 
@@ -35,7 +34,7 @@ io::Reply ExecZAdd(engine::Engine& e, const ZAdd& x) {
         return io::MakeErr("ERR wrong number of arguments for 'zadd' command");
     }
     int64_t added = 0;
-    auto status = e.Upsert<structures::ZSet>(x.key, [&](auto& z) {
+    auto status = e.Upsert<types::ZSet>(x.key, [&](auto& z) {
         for (const auto& entry : x.entries) {
             auto it = z.scores.find(entry.member);
             if (it != z.scores.end()) {

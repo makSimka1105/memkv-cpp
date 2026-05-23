@@ -14,7 +14,7 @@
 #include "meta/overload.hpp"
 #include "structures/geo.hpp"
 #include "structures/geohash.hpp"
-#include "structures/zset.hpp"
+#include "types/all.hpp"
 
 namespace valkey::commands {
 
@@ -57,7 +57,7 @@ std::string_view UnitOf(const GeoBy& by) {
 }
 
 std::optional<std::pair<double, double>> ResolveCenter(
-    const GeoFrom& from, const structures::ZSet& z) {
+    const GeoFrom& from, const types::ZSet& z) {
     return std::visit(Overload{
         [&](const GeoFromMember& m) -> std::optional<std::pair<double, double>> {
             auto it = z.scores.find(m.member);
@@ -90,7 +90,7 @@ bool IsInside(const GeoBy& by, double clon, double clat,
 }
 
 std::vector<GeoHit> CollectHits(double clon, double clat, const GeoBy& by,
-                                        const structures::ZSet& z,
+                                        const types::ZSet& z,
                                         std::optional<bool> sort_dir, int64_t count) {
     std::vector<GeoHit> hits;
     for (const auto& [member, score] : z.scores) {

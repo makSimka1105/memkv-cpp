@@ -1,6 +1,5 @@
 #pragma once
 #include <string>
-#include <unordered_set>
 #include "engine/engine.hpp"
 #include "engine/replies.hpp"
 #include "io/reply.hpp"
@@ -21,7 +20,7 @@ using SIsMemberSchema = schema::Schema<SIsMember,
     schema::Bind<&SIsMember::member, schema::Arg<std::string>>>;
 
 io::Reply ExecSIsMember(engine::Engine& e, const SIsMember& x) {
-    auto [s, st] = e.As<std::unordered_set<std::string>>(x.key);
+    auto [s, st] = e.As<types::Set>(x.key);
     if (st == engine::Engine::TypeStatus::kWrongType) {
         return engine::WrongTypeReply();
     }

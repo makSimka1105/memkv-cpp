@@ -1,6 +1,5 @@
 #pragma once
 #include <string>
-#include <unordered_set>
 #include <vector>
 #include "engine/engine.hpp"
 #include "engine/replies.hpp"
@@ -20,9 +19,9 @@ using SUnionSchema = schema::Schema<SUnion,
     schema::Bind<&SUnion::keys, schema::Variadic<std::string, 1>>>;
 
 io::Reply ExecSUnion(engine::Engine& e, const SUnion& x) {
-    std::unordered_set<std::string> result;
+    types::Set result;
     for (const auto& key : x.keys) {
-        auto [s, st] = e.As<std::unordered_set<std::string>>(key);
+        auto [s, st] = e.As<types::Set>(key);
         if (st == engine::Engine::TypeStatus::kWrongType) {
             return engine::WrongTypeReply();
         }

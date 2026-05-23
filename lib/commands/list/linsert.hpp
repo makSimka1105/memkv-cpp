@@ -1,7 +1,6 @@
 #pragma once
 #include <algorithm>
 #include <cstdint>
-#include <deque>
 #include <string>
 #include "engine/engine.hpp"
 #include "engine/replies.hpp"
@@ -29,7 +28,7 @@ using LInsertSchema = schema::Schema<LInsert,
 
 io::Reply ExecLInsert(engine::Engine& e, const LInsert& x) {
     int64_t new_len = -1;
-    auto st = e.Mutate<std::deque<std::string>>(x.key, [&](auto& lst) {
+    auto st = e.Mutate<types::List>(x.key, [&](auto& lst) {
         auto it = std::find(lst.begin(), lst.end(), x.pivot);
         if (it == lst.end()) {
             return;

@@ -1,6 +1,5 @@
 #pragma once
 #include <cstdint>
-#include <deque>
 #include <string>
 #include <vector>
 #include "engine/engine.hpp"
@@ -25,7 +24,7 @@ using RPushSchema = schema::Schema<RPush,
 
 io::Reply ExecRPush(engine::Engine& e, const RPush& x) {
     int64_t len = 0;
-    auto status = e.Upsert<std::deque<std::string>>(x.key, [&](auto& lst) {
+    auto status = e.Upsert<types::List>(x.key, [&](auto& lst) {
         for (const auto& v : x.values) {
             lst.push_back(v);
         }

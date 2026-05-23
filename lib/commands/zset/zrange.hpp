@@ -12,7 +12,6 @@
 #include "schema/schema.hpp"
 #include "schema/strategies/arg.hpp"
 #include "schema/strategies/flag.hpp"
-#include "structures/zset.hpp"
 
 namespace valkey::commands {
 
@@ -30,7 +29,7 @@ using ZRangeSchema = schema::Schema<ZRange,
     schema::Bind<&ZRange::withscores, schema::Flag<"WITHSCORES">>>;
 
 io::Reply ExecZRange(engine::Engine& e, const ZRange& x) {
-    auto [ptr, st] = e.As<structures::ZSet>(x.key);
+    auto [ptr, st] = e.As<types::ZSet>(x.key);
     if (st == engine::Engine::TypeStatus::kMissing) {
         return io::MakeArray({});
     }
