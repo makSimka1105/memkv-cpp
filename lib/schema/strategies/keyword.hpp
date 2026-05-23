@@ -39,6 +39,8 @@ struct KeywordGroupStrategy {
     using Output = SubNode;
     static constexpr size_t kMinArgc = 0;
     static constexpr size_t kMaxArgc = SaturatingAdd(1, SaturatingSum(Rules::kMaxArgc...));
+    static constexpr size_t kGroupMinArgc = SaturatingAdd(1, SaturatingSum(Rules::kMinArgc...));
+    static constexpr size_t kGroupMaxArgc = kMaxArgc;
 
     static std::expected<SubNode, parser::ParseError> Parse(parser::Cursor& c) {
         if (!c.MatchKeyword(Kw)) {

@@ -17,6 +17,19 @@ double Haversine(double lon1, double lat1, double lon2, double lat2) {
     return kEarthRadius * 2.0 * std::asin(std::sqrt(a));
 }
 
+double ToMeters(double v, std::string_view unit) {
+    if (unit == "km" || unit == "KM") {
+        return v * 1000.0;
+    }
+    if (unit == "mi" || unit == "MI") {
+        return v * 1609.344;
+    }
+    if (unit == "ft" || unit == "FT") {
+        return v * 0.3048;
+    }
+    return v;
+}
+
 double ToUnit(double meters, std::string_view unit) {
     if (unit == "km" || unit == "KM") {
         return meters / 1000.0;
