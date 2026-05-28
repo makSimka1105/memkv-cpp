@@ -4,7 +4,7 @@
 #include <expected>
 #include <string_view>
 
-#include "meta/command_trait.hpp"
+#include "schema/command_trait.hpp"
 #include "parser/cursor.hpp"
 #include "parser/error.hpp"
 #include "parser/token_convert.hpp"

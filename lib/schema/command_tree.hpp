@@ -2,8 +2,8 @@
 
 #include <string_view>
 
-#include "meta/command_trait.hpp"
 #include "meta/type_list.hpp"
+#include "schema/command_trait.hpp"
 
 namespace valkey {
 

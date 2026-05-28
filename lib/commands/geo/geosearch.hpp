@@ -1,24 +1,28 @@
 #pragma once
+
 #include <cstdint>
 #include <format>
 #include <optional>
 #include <string>
 #include <string_view>
 #include <utility>
+#include <variant>
 #include <vector>
 
-#include "commands/geo/geo_nodes.hpp"
+#include "commands/geo/geo_by.hpp"
+#include "commands/geo/geo_from.hpp"
+#include "commands/geo/geo_hit.hpp"
 #include "engine/engine.hpp"
 #include "engine/replies.hpp"
 #include "io/reply.hpp"
-#include "meta/command_tree.hpp"
+#include "schema/command_tree.hpp"
 #include "schema/rule.hpp"
 #include "schema/schema.hpp"
 #include "schema/strategies/arg.hpp"
 #include "schema/strategies/choice.hpp"
 #include "schema/strategies/flag.hpp"
 #include "schema/strategies/keyword.hpp"
-#include "schema/strategies/one_of.hpp"
+#include "schema/strategies/switch_on.hpp"
 #include "structures/geo.hpp"
 
 namespace valkey::commands {
@@ -36,28 +40,29 @@ struct GeoSearch {
 using GeoSearchSchema = schema::Schema<
     GeoSearch,
     schema::Bind<&GeoSearch::key, schema::Arg<std::string>>,
-    schema::Bind<&GeoSearch::from, schema::OneOf<
-        schema::KeywordGroup<"FROMMEMBER", GeoFromMember,
-            schema::Bind<&GeoFromMember::member, schema::Arg<std::string>>>,
-        schema::KeywordGroup<"FROMLONLAT", GeoFromLonLat,
-            schema::Bind<&GeoFromLonLat::lon, schema::Arg<double>>,
-            schema::Bind<&GeoFromLonLat::lat, schema::Arg<double>>>>>,
-    schema::Bind<&GeoSearch::by, schema::OneOf<
-        schema::KeywordGroup<"BYRADIUS", GeoByRadius,
-            schema::Bind<&GeoByRadius::radius, schema::Arg<double>>,
-            schema::Bind<&GeoByRadius::unit, schema::Arg<std::string>>>,
-        schema::KeywordGroup<"BYBOX", GeoByBox,
-            schema::Bind<&GeoByBox::width, schema::Arg<double>>,
-            schema::Bind<&GeoByBox::height, schema::Arg<double>>,
-            schema::Bind<&GeoByBox::unit, schema::Arg<std::string>>>>>,
+    schema::Bind<&GeoSearch::from, schema::SwitchOn<
+        AltCase<"FROMMEMBER", GeoMemberRef, &CenterFromMember,
+            schema::Bind<&GeoMemberRef::member, schema::Arg<std::string>>>,
+        AltCase<"FROMLONLAT", GeoCoordinate, &CenterFromCoord,
+            schema::Bind<&GeoCoordinate::lon, schema::Arg<double>>,
+            schema::Bind<&GeoCoordinate::lat, schema::Arg<double>>>>>,
+    schema::Bind<&GeoSearch::by, schema::SwitchOn<
+        AltCase<"BYRADIUS", GeoRadiusFilter, &RadiusContains,
+            schema::Bind<&GeoRadiusFilter::radius, schema::Arg<double>>,
+            schema::Bind<&GeoRadiusFilter::unit, schema::Arg<std::string>>>,
+        AltCase<"BYBOX", GeoBoxFilter, &BoxContains,
+            schema::Bind<&GeoBoxFilter::width, schema::Arg<double>>,
+            schema::Bind<&GeoBoxFilter::height, schema::Arg<double>>,
+            schema::Bind<&GeoBoxFilter::unit, schema::Arg<std::string>>>>>,
     schema::AnyOrder<
         schema::Bind<&GeoSearch::sort_dir, schema::OptionalChoice<"ASC", "DESC">>,
         schema::Bind<&GeoSearch::count, schema::Keyword<"COUNT", int64_t>>,
         schema::Bind<&GeoSearch::withcoord, schema::Flag<"WITHCOORD">>,
         schema::Bind<&GeoSearch::withdist, schema::Flag<"WITHDIST">>>>;
 
-io::Reply ExecGeoSearch(engine::Engine& e, const GeoSearch& x) {
-    if (!structures::geo::ValidUnit(UnitOf(x.by))) {
+inline io::Reply ExecGeoSearch(engine::Engine& e, const GeoSearch& x) {
+    auto unit = std::visit([](const auto& by) -> std::string_view { return by.unit; }, x.by);
+    if (!structures::geo::ValidUnit(unit)) {
         return io::MakeErr("unsupported unit provided. please use M, KM, FT, MI");
     }
     auto [ptr, st] = e.As<types::ZSet>(x.key);
@@ -67,14 +72,13 @@ io::Reply ExecGeoSearch(engine::Engine& e, const GeoSearch& x) {
     if (st == engine::Engine::TypeStatus::kWrongType) {
         return engine::WrongTypeReply();
     }
-    auto center = ResolveCenter(x.from, *ptr);
+    auto center = GeoFromGroup::Eval(x.from, *ptr);
     if (!center) {
         return io::MakeErr("could not decode requested zset member");
     }
     auto [clon, clat] = *center;
     auto hits = CollectHits(clon, clat, x.by, *ptr, x.sort_dir, x.count);
 
-    std::string_view unit = UnitOf(x.by);
     std::vector<io::Reply> result;
     result.reserve(hits.size());
     for (const auto& h : hits) {

@@ -1,20 +1,25 @@
 #pragma once
+
 #include <cstdint>
 #include <memory>
 #include <optional>
 #include <string>
+#include <string_view>
+#include <variant>
 
-#include "commands/geo/geo_nodes.hpp"
+#include "commands/geo/geo_by.hpp"
+#include "commands/geo/geo_from.hpp"
+#include "commands/geo/geo_hit.hpp"
 #include "engine/engine.hpp"
 #include "engine/replies.hpp"
 #include "io/reply.hpp"
-#include "meta/command_tree.hpp"
+#include "schema/command_tree.hpp"
 #include "schema/rule.hpp"
 #include "schema/schema.hpp"
 #include "schema/strategies/arg.hpp"
 #include "schema/strategies/choice.hpp"
 #include "schema/strategies/keyword.hpp"
-#include "schema/strategies/one_of.hpp"
+#include "schema/strategies/switch_on.hpp"
 #include "structures/geo.hpp"
 #include "structures/skiplist.hpp"
 
@@ -33,26 +38,27 @@ using GeoSearchStoreSchema = schema::Schema<
     GeoSearchStore,
     schema::Bind<&GeoSearchStore::dest, schema::Arg<std::string>>,
     schema::Bind<&GeoSearchStore::src, schema::Arg<std::string>>,
-    schema::Bind<&GeoSearchStore::from, schema::OneOf<
-        schema::KeywordGroup<"FROMMEMBER", GeoFromMember,
-            schema::Bind<&GeoFromMember::member, schema::Arg<std::string>>>,
-        schema::KeywordGroup<"FROMLONLAT", GeoFromLonLat,
-            schema::Bind<&GeoFromLonLat::lon, schema::Arg<double>>,
-            schema::Bind<&GeoFromLonLat::lat, schema::Arg<double>>>>>,
-    schema::Bind<&GeoSearchStore::by, schema::OneOf<
-        schema::KeywordGroup<"BYRADIUS", GeoByRadius,
-            schema::Bind<&GeoByRadius::radius, schema::Arg<double>>,
-            schema::Bind<&GeoByRadius::unit, schema::Arg<std::string>>>,
-        schema::KeywordGroup<"BYBOX", GeoByBox,
-            schema::Bind<&GeoByBox::width, schema::Arg<double>>,
-            schema::Bind<&GeoByBox::height, schema::Arg<double>>,
-            schema::Bind<&GeoByBox::unit, schema::Arg<std::string>>>>>,
+    schema::Bind<&GeoSearchStore::from, schema::SwitchOn<
+        AltCase<"FROMMEMBER", GeoMemberRef, &CenterFromMember,
+            schema::Bind<&GeoMemberRef::member, schema::Arg<std::string>>>,
+        AltCase<"FROMLONLAT", GeoCoordinate, &CenterFromCoord,
+            schema::Bind<&GeoCoordinate::lon, schema::Arg<double>>,
+            schema::Bind<&GeoCoordinate::lat, schema::Arg<double>>>>>,
+    schema::Bind<&GeoSearchStore::by, schema::SwitchOn<
+        AltCase<"BYRADIUS", GeoRadiusFilter, &RadiusContains,
+            schema::Bind<&GeoRadiusFilter::radius, schema::Arg<double>>,
+            schema::Bind<&GeoRadiusFilter::unit, schema::Arg<std::string>>>,
+        AltCase<"BYBOX", GeoBoxFilter, &BoxContains,
+            schema::Bind<&GeoBoxFilter::width, schema::Arg<double>>,
+            schema::Bind<&GeoBoxFilter::height, schema::Arg<double>>,
+            schema::Bind<&GeoBoxFilter::unit, schema::Arg<std::string>>>>>,
     schema::AnyOrder<
         schema::Bind<&GeoSearchStore::sort_dir, schema::OptionalChoice<"ASC", "DESC">>,
         schema::Bind<&GeoSearchStore::count, schema::Keyword<"COUNT", int64_t>>>>;
 
-io::Reply ExecGeoSearchStore(engine::Engine& e, const GeoSearchStore& x) {
-    if (!structures::geo::ValidUnit(UnitOf(x.by))) {
+inline io::Reply ExecGeoSearchStore(engine::Engine& e, const GeoSearchStore& x) {
+    auto unit = std::visit([](const auto& by) -> std::string_view { return by.unit; }, x.by);
+    if (!structures::geo::ValidUnit(unit)) {
         return io::MakeErr("unsupported unit provided. please use M, KM, FT, MI");
     }
     auto [ptr, st] = e.As<types::ZSet>(x.src);
@@ -63,7 +69,7 @@ io::Reply ExecGeoSearchStore(engine::Engine& e, const GeoSearchStore& x) {
     if (st == engine::Engine::TypeStatus::kWrongType) {
         return engine::WrongTypeReply();
     }
-    auto center = ResolveCenter(x.from, *ptr);
+    auto center = GeoFromGroup::Eval(x.from, *ptr);
     if (!center) {
         return io::MakeErr("could not decode requested zset member");
     }

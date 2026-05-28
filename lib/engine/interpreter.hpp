@@ -5,7 +5,7 @@
 #include "commands/all.hpp"
 #include "engine/engine.hpp"
 #include "io/reply.hpp"
-#include "meta/command_tree.hpp"
+#include "schema/command_tree.hpp"
 #include "meta/overload.hpp"
 #include "meta/type_list.hpp"
 #include "parser/cmd.hpp"

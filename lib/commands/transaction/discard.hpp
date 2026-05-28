@@ -2,7 +2,7 @@
 
 #include "engine/engine.hpp"
 #include "io/reply.hpp"
-#include "meta/command_tree.hpp"
+#include "schema/command_tree.hpp"
 #include "schema/schema.hpp"
 
 namespace valkey::commands {
