@@ -3,7 +3,7 @@
 #include <expected>
 #include "meta/fixed_string.hpp"
 #include "parser/cursor.hpp"
-#include "parser/error.hpp"
+#include "parser/errors.hpp"
 namespace valkey::schema {
 template <FixedString Kw>
 struct Lit {

@@ -7,6 +7,7 @@
 #include "engine/session.hpp"
 #include "engine/session_eval.hpp"
 #include "io/human.hpp"
+#include "io/reply.hpp"
 #include "lexer/lexer.hpp"
 #include "parser/parser.hpp"
 
@@ -22,13 +23,13 @@ void RunStdinRepl(engine::Engine& eng, std::istream& in, std::ostream& out) {
 
         auto tokens = parser::Tokenize(line);
         if (!tokens) {
-            out << "(error) " << tokens.error().message << '\n';
+            human::Write(out, io::MakeErr(tokens.error().message));
             continue;
         }
 
         auto cmd = parser::Parse(*tokens);
         if (!cmd) {
-            out << "(error) " << cmd.error().message << '\n';
+            human::Write(out, io::MakeErr(cmd.error().message));
             continue;
         }
 

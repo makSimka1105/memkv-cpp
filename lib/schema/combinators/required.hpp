@@ -5,7 +5,7 @@
 #include <string_view>
 
 #include "parser/cursor.hpp"
-#include "parser/error.hpp"
+#include "parser/errors.hpp"
 #include "schema/core/concepts.hpp"
 
 namespace valkey::schema {

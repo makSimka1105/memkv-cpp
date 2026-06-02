@@ -6,7 +6,7 @@
 
 #include "meta/fixed_string.hpp"
 #include "parser/cursor.hpp"
-#include "parser/error.hpp"
+#include "parser/errors.hpp"
 #include "parser/token_convert.hpp"
 #include "schema/combinators/apply_fields.hpp"
 #include "schema/core/argc.hpp"

@@ -5,7 +5,7 @@
 #include <optional>
 
 #include "parser/cursor.hpp"
-#include "parser/error.hpp"
+#include "parser/errors.hpp"
 #include "schema/parsers/scan.hpp"
 
 namespace valkey::schema {

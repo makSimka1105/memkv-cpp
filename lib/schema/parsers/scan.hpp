@@ -4,7 +4,7 @@
 #include <string>
 
 #include "parser/cursor.hpp"
-#include "parser/error.hpp"
+#include "parser/errors.hpp"
 namespace valkey::schema {
 template <class Type>
 struct Scan;

@@ -6,7 +6,8 @@
 #include <utility>
 
 #include "parser/cursor.hpp"
-#include "parser/error.hpp"
+#include "parser/errors.hpp"
+#include "meta/try.hpp"
 #include "schema/combinators/required.hpp"
 #include "schema/core/argc.hpp"
 #include "schema/core/concepts.hpp"
@@ -42,9 +43,7 @@ struct AnyOrder {
             if (!matched) {
                 break;
             }
-            if (!applied) {
-                return std::unexpected(applied.error());
-            }
+            VK_RETURN_IF_ERROR(applied);
         }
 
         std::expected<void, parser::ParseError> result{};

@@ -7,7 +7,8 @@
 
 #include "lexer/types.hpp"
 #include "parser/cursor.hpp"
-#include "parser/error.hpp"
+#include "parser/errors.hpp"
+#include "meta/try.hpp"
 #include "schema/combinators/seq.hpp"
 #include "schema/core/concepts.hpp"
 #include "util/str.hpp"
@@ -25,18 +26,14 @@ struct Schema {
     static std::expected<Node, parser::ParseError> Parse(std::span<const parser::Token> args,
                                                          std::string_view cmd_name = "") {
         if (args.size() < MinArgc() || args.size() > MaxArgc()) {
-            return std::unexpected(parser::ParseError{
-                "ERR wrong number of arguments for '" + LowerName(cmd_name) + "' command", 0});
+            return parser::err::WrongArgs(cmd_name);
         }
         parser::Cursor cursor{args, 0};
-        auto result = Body::Parse(cursor);
-        if (!result) {
-            return std::unexpected(result.error());
-        }
+        VK_ASSIGN_OR_RETURN(auto node, Body::Parse(cursor));
         if (!cursor.Done()) {
-            return std::unexpected(parser::ParseError{"ERR syntax error", cursor.Pos()});
+            return parser::err::SyntaxError(cursor.Pos());
         }
-        return std::move(*result);
+        return std::move(node);
     }
 };
 

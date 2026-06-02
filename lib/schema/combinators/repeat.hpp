@@ -6,7 +6,8 @@
 #include <vector>
 
 #include "parser/cursor.hpp"
-#include "parser/error.hpp"
+#include "parser/errors.hpp"
+#include "meta/try.hpp"
 #include "schema/combinators/apply_fields.hpp"
 #include "schema/core/argc.hpp"
 #include "schema/core/concepts.hpp"
@@ -20,20 +21,17 @@ struct Repeat {
     static constexpr size_t kMaxArgc = kUnbounded;
 
     static std::expected<std::vector<Elem>, parser::ParseError> Parse(parser::Cursor& cursor) {
-        std::vector<Elem> out_elements;
+        std::vector<Elem> out;
         while (!cursor.Done()) {
-            Elem element{};
-            size_t start_pos = cursor.pos;
-            auto result = ApplyFields<Fields...>(cursor, element);
-            if (!result) {
-                return std::unexpected(result.error());
-            }
-            if (cursor.pos == start_pos) {
+            Elem e{};
+            size_t before = cursor.pos;
+            VK_RETURN_IF_ERROR(ApplyFields<Fields...>(cursor, e));
+            if (cursor.pos == before) {
                 break;
             }
-            out_elements.push_back(std::move(element));
+            out.push_back(std::move(e));
         }
-        return out_elements;
+        return out;
     }
 };
 

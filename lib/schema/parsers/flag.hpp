@@ -4,7 +4,7 @@
 #include <string_view>
 #include "meta/fixed_string.hpp"
 #include "parser/cursor.hpp"
-#include "parser/error.hpp"
+#include "parser/errors.hpp"
 #include "util/str.hpp"
 namespace valkey::schema {
 template <FixedString Kw>

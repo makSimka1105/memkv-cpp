@@ -11,7 +11,8 @@
 
 #include "lexer/types.hpp"
 #include "meta/overload.hpp"
-#include "parser/error.hpp"
+#include "parser/errors.hpp"
+#include "meta/try.hpp"
 
 namespace valkey::parser {
 
@@ -27,10 +28,10 @@ std::expected<std::string, ParseError> TokenToString(const Token& tok, size_t id
             },
             [](const TkStr& s) -> std::expected<std::string, ParseError> { return s.value; },
             [idx](const TkEof&) -> std::expected<std::string, ParseError> {
-                return std::unexpected(ParseError{"unexpected EOF", idx});
+                return err::UnexpectedEof(idx);
             },
             [idx](const TkSkip&) -> std::expected<std::string, ParseError> {
-                return std::unexpected(ParseError{"unexpected skip token", idx});
+                return err::Message("unexpected skip token", idx);
             },
         },
         tok);
@@ -41,8 +42,7 @@ std::expected<int64_t, ParseError> TokenToInt(const Token& tok, size_t idx) {
         Overload{
             [](const TkInt& i) -> std::expected<int64_t, ParseError> { return i.value; },
             [idx](const auto&) -> std::expected<int64_t, ParseError> {
-                return std::unexpected(
-                    ParseError{"ERR value is not an integer or out of range", idx});
+                return err::NotInteger(idx);
             },
         },
         tok);
@@ -56,7 +56,7 @@ std::expected<double, ParseError> TokenToFloat(const Token& tok, size_t idx) {
                 return static_cast<double>(i.value);
             },
             [idx](const auto&) -> std::expected<double, ParseError> {
-                return std::unexpected(ParseError{"ERR value is not a valid float", idx});
+                return err::NotFloat(idx);
             },
         },
         tok);
@@ -67,11 +67,8 @@ std::expected<std::vector<std::string>, ParseError> CollectStrings(
     std::vector<std::string> out;
     out.reserve(args.size());
     for (size_t i = 0; i < args.size(); ++i) {
-        auto s = TokenToString(args[i], base_index + i);
-        if (!s) {
-            return std::unexpected(s.error());
-        }
-        out.push_back(std::move(*s));
+        VK_ASSIGN_OR_RETURN(auto s, TokenToString(args[i], base_index + i));
+        out.push_back(std::move(s));
     }
     return out;
 }

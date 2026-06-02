@@ -7,7 +7,7 @@
 
 #include "meta/fixed_string.hpp"
 #include "parser/cursor.hpp"
-#include "parser/error.hpp"
+#include "parser/errors.hpp"
 #include "parser/token_convert.hpp"
 
 namespace valkey::schema {

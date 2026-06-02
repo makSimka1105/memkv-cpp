@@ -8,7 +8,7 @@
 #include <variant>
 
 #include "parser/cursor.hpp"
-#include "parser/error.hpp"
+#include "parser/errors.hpp"
 #include "schema/core/concepts.hpp"
 #include "schema/core/match_first.hpp"
 

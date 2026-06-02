@@ -10,7 +10,7 @@
 #include "lexer/types.hpp"
 #include "meta/type_list.hpp"
 #include "parser/cmd.hpp"
-#include "parser/error.hpp"
+#include "parser/errors.hpp"
 #include "util/str.hpp"
 
 namespace valkey::parser {
@@ -28,15 +28,11 @@ std::expected<Cmd, ParseError> DispatchNode(std::span<const Token> tokens,
         return Trait::SchemaType::Parse(tokens, full_name);
     } else {
         if (tokens.empty()) {
-            if (full_name.empty()) {
-                return std::unexpected(ParseError{"ERR empty input", 0});
-            }
-            return std::unexpected(ParseError{
-                "ERR wrong number of arguments for '" + LowerName(full_name) + "' command", 0});
+            return full_name.empty() ? err::EmptyInput() : err::WrongArgs(full_name);
         }
         const auto* sub = std::get_if<TkWord>(&tokens[0]);
         if (!sub) {
-            return std::unexpected(ParseError{"ERR syntax error", 0});
+            return err::SyntaxError();
         }
         return DispatchList(tokens.subspan(1), sub->text, full_name,
                             typename Trait::ChildrenList{});
@@ -46,10 +42,8 @@ std::expected<Cmd, ParseError> DispatchNode(std::span<const Token> tokens,
 template <class... Traits>
 std::expected<Cmd, ParseError> DispatchList(std::span<const Token> tokens, std::string_view word,
                                             std::string_view full_prefix, TraitsList<Traits...>) {
-    std::expected<Cmd, ParseError> result = std::unexpected(
-        ParseError{(full_prefix.empty() ? "ERR unknown command '" : "ERR unknown subcommand '") +
-                       std::string(word) + "'",
-                   0});
+    std::expected<Cmd, ParseError> result =
+        full_prefix.empty() ? err::UnknownCommand(word) : err::UnknownSubcommand(word);
 
     ((CaseEqual(Traits::kName, word) &&
       [&] {

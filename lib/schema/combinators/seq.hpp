@@ -4,7 +4,7 @@
 #include <expected>
 
 #include "parser/cursor.hpp"
-#include "parser/error.hpp"
+#include "parser/errors.hpp"
 #include "schema/combinators/apply_fields.hpp"
 #include "schema/core/argc.hpp"
 #include "schema/core/concepts.hpp"
@@ -17,13 +17,9 @@ struct Seq {
     static constexpr size_t kMinArgc = SaturatingSum(Fields::kMinArgc...);
     static constexpr size_t kMaxArgc = SaturatingSum(Fields::kMaxArgc...);
 
-    static std::expected<Node, parser::ParseError> Parse(parser::Cursor& cursor) {
+    static std::expected<Node, parser::ParseError> Parse(parser::Cursor& c) {
         Node node{};
-        auto result = ApplyFields<Fields...>(cursor, node);
-        if (!result) {
-            return std::unexpected(result.error());
-        }
-        return node;
+        return ApplyFields<Fields...>(c, node).transform([&] { return std::move(node); });
     }
 };
 
