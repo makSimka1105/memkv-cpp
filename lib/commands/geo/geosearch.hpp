@@ -12,25 +12,26 @@
 #include "commands/geo/geo_by.hpp"
 #include "commands/geo/geo_from.hpp"
 #include "commands/geo/geo_hit.hpp"
+#include "commands/tree.hpp"
 #include "engine/engine.hpp"
 #include "engine/replies.hpp"
 #include "io/reply.hpp"
-#include "schema/command_tree.hpp"
-#include "schema/rule.hpp"
+#include "meta/overload.hpp"
+#include "schema/combinators/any_order.hpp"
+#include "schema/combinators/field.hpp"
+#include "schema/parsers/arg.hpp"
+#include "schema/parsers/flag.hpp"
+#include "schema/parsers/keyword.hpp"
+#include "schema/parsers/optional_choice.hpp"
 #include "schema/schema.hpp"
-#include "schema/strategies/arg.hpp"
-#include "schema/strategies/choice.hpp"
-#include "schema/strategies/flag.hpp"
-#include "schema/strategies/keyword.hpp"
-#include "schema/strategies/switch_on.hpp"
 #include "structures/geo.hpp"
 
 namespace valkey::commands {
 
 struct GeoSearch {
     std::string key;
-    GeoFrom from;
-    GeoBy by;
+    GeoFrom::Type from;
+    GeoBy::Type by;
     std::optional<bool> sort_dir;
     int64_t count{0};
     bool withcoord{false};
@@ -39,28 +40,16 @@ struct GeoSearch {
 
 using GeoSearchSchema = schema::Schema<
     GeoSearch,
-    schema::Bind<&GeoSearch::key, schema::Arg<std::string>>,
-    schema::Bind<&GeoSearch::from, schema::SwitchOn<
-        AltCase<"FROMMEMBER", GeoMemberRef, &CenterFromMember,
-            schema::Bind<&GeoMemberRef::member, schema::Arg<std::string>>>,
-        AltCase<"FROMLONLAT", GeoCoordinate, &CenterFromCoord,
-            schema::Bind<&GeoCoordinate::lon, schema::Arg<double>>,
-            schema::Bind<&GeoCoordinate::lat, schema::Arg<double>>>>>,
-    schema::Bind<&GeoSearch::by, schema::SwitchOn<
-        AltCase<"BYRADIUS", GeoRadiusFilter, &RadiusContains,
-            schema::Bind<&GeoRadiusFilter::radius, schema::Arg<double>>,
-            schema::Bind<&GeoRadiusFilter::unit, schema::Arg<std::string>>>,
-        AltCase<"BYBOX", GeoBoxFilter, &BoxContains,
-            schema::Bind<&GeoBoxFilter::width, schema::Arg<double>>,
-            schema::Bind<&GeoBoxFilter::height, schema::Arg<double>>,
-            schema::Bind<&GeoBoxFilter::unit, schema::Arg<std::string>>>>>,
+    schema::Field<&GeoSearch::key, schema::Arg<std::string>>,
+    schema::Field<&GeoSearch::from, GeoFrom>,
+    schema::Field<&GeoSearch::by, GeoBy>,
     schema::AnyOrder<
-        schema::Bind<&GeoSearch::sort_dir, schema::OptionalChoice<"ASC", "DESC">>,
-        schema::Bind<&GeoSearch::count, schema::Keyword<"COUNT", int64_t>>,
-        schema::Bind<&GeoSearch::withcoord, schema::Flag<"WITHCOORD">>,
-        schema::Bind<&GeoSearch::withdist, schema::Flag<"WITHDIST">>>>;
+        schema::Field<&GeoSearch::sort_dir, schema::OptionalChoice<"ASC", "DESC">>,
+        schema::Field<&GeoSearch::count, schema::Keyword<"COUNT", int64_t>>,
+        schema::Field<&GeoSearch::withcoord, schema::Flag<"WITHCOORD">>,
+        schema::Field<&GeoSearch::withdist, schema::Flag<"WITHDIST">>>>;
 
-inline io::Reply ExecGeoSearch(engine::Engine& e, const GeoSearch& x) {
+io::Reply ExecGeoSearch(engine::Engine& e, const GeoSearch& x) {
     auto unit = std::visit([](const auto& by) -> std::string_view { return by.unit; }, x.by);
     if (!structures::geo::ValidUnit(unit)) {
         return io::MakeErr("unsupported unit provided. please use M, KM, FT, MI");
@@ -72,7 +61,10 @@ inline io::Reply ExecGeoSearch(engine::Engine& e, const GeoSearch& x) {
     if (st == engine::Engine::TypeStatus::kWrongType) {
         return engine::WrongTypeReply();
     }
-    auto center = GeoFromGroup::Eval(x.from, *ptr);
+    auto center = std::visit(Overload{
+        [&](const GeoMemberRef& m) { return CenterFromMember(m, *ptr); },
+        [&](const GeoCoordinate& p) { return CenterFromCoord(p, *ptr); },
+    }, x.from);
     if (!center) {
         return io::MakeErr("could not decode requested zset member");
     }

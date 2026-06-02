@@ -4,9 +4,10 @@
 #include <string>
 #include <utility>
 
-#include "schema/alt_group.hpp"
-#include "schema/rule.hpp"
-#include "schema/strategies/arg.hpp"
+#include "schema/combinators/field.hpp"
+#include "schema/combinators/group.hpp"
+#include "schema/combinators/one_of.hpp"
+#include "schema/parsers/arg.hpp"
 #include "structures/geohash.hpp"
 #include "types/all.hpp"
 
@@ -23,7 +24,7 @@ struct GeoCoordinate {
 
 using GeoCenter = std::optional<std::pair<double, double>>;
 
-inline GeoCenter CenterFromMember(const GeoMemberRef& m, const types::ZSet& z) {
+GeoCenter CenterFromMember(const GeoMemberRef& m, const types::ZSet& z) {
     auto it = z.scores.find(m.member);
     if (it == z.scores.end()) {
         return std::nullopt;
@@ -32,17 +33,15 @@ inline GeoCenter CenterFromMember(const GeoMemberRef& m, const types::ZSet& z) {
     return std::pair{lo, la};
 }
 
-inline GeoCenter CenterFromCoord(const GeoCoordinate& p, const types::ZSet&) {
+GeoCenter CenterFromCoord(const GeoCoordinate& p, const types::ZSet&) {
     return std::pair{p.lon, p.lat};
 }
 
-using GeoFromGroup = AltGroup<
-    AltCase<"FROMMEMBER", GeoMemberRef, &CenterFromMember,
-        schema::Bind<&GeoMemberRef::member, schema::Arg<std::string>>>,
-    AltCase<"FROMLONLAT", GeoCoordinate, &CenterFromCoord,
-        schema::Bind<&GeoCoordinate::lon, schema::Arg<double>>,
-        schema::Bind<&GeoCoordinate::lat, schema::Arg<double>>>>;
-
-using GeoFrom = GeoFromGroup::Variant;
+using GeoFrom = schema::OneOf<
+    schema::Case<"FROMMEMBER", GeoMemberRef,
+        schema::Field<&GeoMemberRef::member, schema::Arg<std::string>>>,
+    schema::Case<"FROMLONLAT", GeoCoordinate,
+        schema::Field<&GeoCoordinate::lon, schema::Arg<double>>,
+        schema::Field<&GeoCoordinate::lat, schema::Arg<double>>>>;
 
 }  // namespace valkey::commands

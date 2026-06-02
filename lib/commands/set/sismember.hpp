@@ -3,10 +3,10 @@
 #include "engine/engine.hpp"
 #include "engine/replies.hpp"
 #include "io/reply.hpp"
-#include "schema/command_tree.hpp"
-#include "schema/rule.hpp"
+#include "commands/tree.hpp"
+#include "schema/combinators/field.hpp"
 #include "schema/schema.hpp"
-#include "schema/strategies/arg.hpp"
+#include "schema/parsers/arg.hpp"
 
 namespace valkey::commands {
 
@@ -16,8 +16,8 @@ struct SIsMember {
 };
 
 using SIsMemberSchema = schema::Schema<SIsMember,
-    schema::Bind<&SIsMember::key, schema::Arg<std::string>>,
-    schema::Bind<&SIsMember::member, schema::Arg<std::string>>>;
+    schema::Field<&SIsMember::key, schema::Arg<std::string>>,
+    schema::Field<&SIsMember::member, schema::Arg<std::string>>>;
 
 io::Reply ExecSIsMember(engine::Engine& e, const SIsMember& x) {
     auto [s, st] = e.As<types::Set>(x.key);

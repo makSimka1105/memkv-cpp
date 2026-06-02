@@ -5,11 +5,11 @@
 #include "engine/engine.hpp"
 #include "engine/replies.hpp"
 #include "io/reply.hpp"
-#include "schema/command_tree.hpp"
-#include "schema/rule.hpp"
+#include "commands/tree.hpp"
+#include "schema/combinators/field.hpp"
 #include "schema/schema.hpp"
-#include "schema/strategies/arg.hpp"
-#include "schema/strategies/variadic.hpp"
+#include "schema/parsers/arg.hpp"
+#include "schema/parsers/variadic.hpp"
 
 namespace valkey::commands {
 
@@ -19,8 +19,8 @@ struct LPush {
 };
 
 using LPushSchema = schema::Schema<LPush,
-    schema::Bind<&LPush::key, schema::Arg<std::string>>,
-    schema::Bind<&LPush::values, schema::Variadic<std::string, 1>>>;
+    schema::Field<&LPush::key, schema::Arg<std::string>>,
+    schema::Field<&LPush::values, schema::Variadic<std::string, 1>>>;
 
 io::Reply ExecLPush(engine::Engine& e, const LPush& x) {
     int64_t len = 0;

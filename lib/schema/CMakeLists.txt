@@ -2,14 +2,27 @@ target_sources(valkey_core
     INTERFACE
     FILE_SET HEADERS
     FILES
-        ${CMAKE_CURRENT_SOURCE_DIR}/contract.hpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/scan.hpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/apply.hpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/rule.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/schema.hpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/command_trait.hpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/command_tree.hpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/alt_group.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/core/argc.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/core/concepts.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/core/match_first.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/parsers/scan.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/parsers/arg.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/parsers/optional.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/parsers/variadic.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/parsers/flag.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/parsers/keyword.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/parsers/choice.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/parsers/optional_choice.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/parsers/enum.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/parsers/lit.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/combinators/apply_fields.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/combinators/field.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/combinators/seq.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/combinators/group.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/combinators/opt.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/combinators/one_of.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/combinators/required.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/combinators/any_order.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/combinators/repeat.hpp
 )
-
-add_subdirectory(strategies)

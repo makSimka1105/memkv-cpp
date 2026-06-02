@@ -7,10 +7,11 @@
 #include "engine/engine.hpp"
 #include "engine/replies.hpp"
 #include "io/reply.hpp"
-#include "schema/command_tree.hpp"
-#include "schema/rule.hpp"
+#include "commands/tree.hpp"
+#include "schema/combinators/field.hpp"
 #include "schema/schema.hpp"
-#include "schema/strategies/arg.hpp"
+#include "schema/parsers/arg.hpp"
+#include "schema/parsers/optional.hpp"
 
 namespace valkey::commands {
 
@@ -20,8 +21,8 @@ struct ZPopMax {
 };
 
 using ZPopMaxSchema = schema::Schema<ZPopMax,
-    schema::Bind<&ZPopMax::key, schema::Arg<std::string>>,
-    schema::Bind<&ZPopMax::count, schema::OptArg<std::optional<int64_t>>>>;
+    schema::Field<&ZPopMax::key, schema::Arg<std::string>>,
+    schema::Field<&ZPopMax::count, schema::Optional<std::optional<int64_t>>>>;
 
 io::Reply ExecZPopMax(engine::Engine& e, const ZPopMax& x) {
     size_t n = x.count.value_or(1);

@@ -5,11 +5,11 @@
 #include "engine/engine.hpp"
 #include "engine/replies.hpp"
 #include "io/reply.hpp"
-#include "schema/command_tree.hpp"
-#include "schema/rule.hpp"
+#include "commands/tree.hpp"
+#include "schema/combinators/field.hpp"
 #include "schema/schema.hpp"
-#include "schema/strategies/arg.hpp"
-#include "schema/strategies/variadic.hpp"
+#include "schema/parsers/arg.hpp"
+#include "schema/parsers/variadic.hpp"
 
 namespace valkey::commands {
 
@@ -19,8 +19,8 @@ struct SAdd {
 };
 
 using SAddSchema = schema::Schema<SAdd,
-    schema::Bind<&SAdd::key, schema::Arg<std::string>>,
-    schema::Bind<&SAdd::members, schema::Variadic<std::string, 1>>>;
+    schema::Field<&SAdd::key, schema::Arg<std::string>>,
+    schema::Field<&SAdd::members, schema::Variadic<std::string, 1>>>;
 
 io::Reply ExecSAdd(engine::Engine& e, const SAdd& x) {
     int64_t added = 0;

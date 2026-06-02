@@ -55,7 +55,7 @@
 #include "geo/geohash_cmd.hpp"
 #include "geo/geosearch.hpp"
 #include "geo/geosearchstore.hpp"
-#include "schema/command_tree.hpp"
+#include "commands/tree.hpp"
 
 namespace valkey::commands {
 

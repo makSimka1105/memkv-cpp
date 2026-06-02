@@ -2,13 +2,13 @@
 
 #include <string>
 
+#include "commands/tree.hpp"
 #include "engine/config.hpp"
 #include "engine/engine.hpp"
 #include "io/reply.hpp"
-#include "schema/command_tree.hpp"
-#include "schema/rule.hpp"
+#include "schema/combinators/field.hpp"
+#include "schema/parsers/arg.hpp"
 #include "schema/schema.hpp"
-#include "schema/strategies/arg.hpp"
 
 namespace valkey::commands {
 
@@ -18,8 +18,8 @@ struct ConfigSet {
 };
 
 using ConfigSetSchema = schema::Schema<ConfigSet,
-    schema::Bind<&ConfigSet::param, schema::Arg<std::string>>,
-    schema::Bind<&ConfigSet::value, schema::Arg<std::string>>>;
+    schema::Field<&ConfigSet::param, schema::Arg<std::string>>,
+    schema::Field<&ConfigSet::value, schema::Arg<std::string>>>;
 
 io::Reply ExecConfigSet(engine::Engine& e, const ConfigSet& x) {
     if (x.param == "maxmemory") {

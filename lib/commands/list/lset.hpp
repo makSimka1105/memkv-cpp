@@ -4,10 +4,10 @@
 #include "engine/engine.hpp"
 #include "engine/replies.hpp"
 #include "io/reply.hpp"
-#include "schema/command_tree.hpp"
-#include "schema/rule.hpp"
+#include "commands/tree.hpp"
+#include "schema/combinators/field.hpp"
 #include "schema/schema.hpp"
-#include "schema/strategies/arg.hpp"
+#include "schema/parsers/arg.hpp"
 
 namespace valkey::commands {
 
@@ -18,9 +18,9 @@ struct LSet {
 };
 
 using LSetSchema = schema::Schema<LSet,
-    schema::Bind<&LSet::key, schema::Arg<std::string>>,
-    schema::Bind<&LSet::index, schema::Arg<int64_t>>,
-    schema::Bind<&LSet::value, schema::Arg<std::string>>>;
+    schema::Field<&LSet::key, schema::Arg<std::string>>,
+    schema::Field<&LSet::index, schema::Arg<int64_t>>,
+    schema::Field<&LSet::value, schema::Arg<std::string>>>;
 
 io::Reply ExecLSet(engine::Engine& e, const LSet& x) {
     bool out_of_range = false;

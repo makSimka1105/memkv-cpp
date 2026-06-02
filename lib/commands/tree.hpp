@@ -2,10 +2,10 @@
 
 #include <string_view>
 
+#include "meta/fixed_string.hpp"
 #include "meta/type_list.hpp"
-#include "schema/command_trait.hpp"
 
-namespace valkey {
+namespace valkey::commands {
 
 template <FixedString Name, class Schema, auto ExecFn>
 struct CommandTrait {
@@ -72,4 +72,4 @@ struct FlattenImpl<CommandGroup<Name, Children...>> {
 template <class T>
 using FlattenLeaves = typename detail::FlattenImpl<T>::type;
 
-}  // namespace valkey
+}  // namespace valkey::commands

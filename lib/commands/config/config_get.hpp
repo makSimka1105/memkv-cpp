@@ -4,12 +4,12 @@
 #include <utility>
 #include <vector>
 
+#include "commands/tree.hpp"
 #include "engine/engine.hpp"
 #include "io/reply.hpp"
-#include "schema/command_tree.hpp"
-#include "schema/rule.hpp"
+#include "schema/combinators/field.hpp"
+#include "schema/parsers/arg.hpp"
 #include "schema/schema.hpp"
-#include "schema/strategies/arg.hpp"
 
 namespace valkey::commands {
 
@@ -18,7 +18,7 @@ struct ConfigGet {
 };
 
 using ConfigGetSchema = schema::Schema<ConfigGet,
-    schema::Bind<&ConfigGet::param, schema::Arg<std::string>>>;
+    schema::Field<&ConfigGet::param, schema::Arg<std::string>>>;
 
 io::Reply ExecConfigGet(engine::Engine& e, const ConfigGet& x) {
     std::vector<io::Reply> items;

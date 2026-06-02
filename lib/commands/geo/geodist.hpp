@@ -5,10 +5,11 @@
 #include "engine/engine.hpp"
 #include "engine/replies.hpp"
 #include "io/reply.hpp"
-#include "schema/command_tree.hpp"
-#include "schema/rule.hpp"
+#include "commands/tree.hpp"
+#include "schema/combinators/field.hpp"
 #include "schema/schema.hpp"
-#include "schema/strategies/arg.hpp"
+#include "schema/parsers/arg.hpp"
+#include "schema/parsers/optional.hpp"
 #include "structures/geo.hpp"
 #include "structures/geohash.hpp"
 #include "types/all.hpp"
@@ -23,10 +24,10 @@ struct GeoDist {
 };
 
 using GeoDistSchema = schema::Schema<GeoDist,
-    schema::Bind<&GeoDist::key, schema::Arg<std::string>>,
-    schema::Bind<&GeoDist::member1, schema::Arg<std::string>>,
-    schema::Bind<&GeoDist::member2, schema::Arg<std::string>>,
-    schema::Bind<&GeoDist::unit, schema::OptArg<std::string>>>;
+    schema::Field<&GeoDist::key, schema::Arg<std::string>>,
+    schema::Field<&GeoDist::member1, schema::Arg<std::string>>,
+    schema::Field<&GeoDist::member2, schema::Arg<std::string>>,
+    schema::Field<&GeoDist::unit, schema::Optional<std::string>>>;
 
 io::Reply ExecGeoDist(engine::Engine& e, const GeoDist& x) {
     std::string_view unit = x.unit.empty() ? "m" : std::string_view{x.unit};

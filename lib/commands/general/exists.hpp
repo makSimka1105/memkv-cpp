@@ -4,12 +4,12 @@
 #include <string>
 #include <vector>
 
+#include "commands/tree.hpp"
 #include "engine/engine.hpp"
 #include "io/reply.hpp"
-#include "schema/command_tree.hpp"
-#include "schema/rule.hpp"
+#include "schema/combinators/field.hpp"
+#include "schema/parsers/variadic.hpp"
 #include "schema/schema.hpp"
-#include "schema/strategies/variadic.hpp"
 
 namespace valkey::commands {
 
@@ -18,7 +18,7 @@ struct Exists {
 };
 
 using ExistsSchema = schema::Schema<Exists,
-    schema::Bind<&Exists::keys, schema::Variadic<std::string, 1>>>;
+    schema::Field<&Exists::keys, schema::Variadic<std::string, 1>>>;
 
 io::Reply ExecExists(engine::Engine& e, const Exists& x) {
     int64_t count = 0;

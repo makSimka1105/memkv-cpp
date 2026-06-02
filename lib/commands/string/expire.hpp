@@ -4,10 +4,10 @@
 #include <string>
 #include "engine/engine.hpp"
 #include "io/reply.hpp"
-#include "schema/command_tree.hpp"
-#include "schema/rule.hpp"
+#include "commands/tree.hpp"
+#include "schema/combinators/field.hpp"
 #include "schema/schema.hpp"
-#include "schema/strategies/arg.hpp"
+#include "schema/parsers/arg.hpp"
 
 namespace valkey::commands {
 
@@ -17,8 +17,8 @@ struct Expire {
 };
 
 using ExpireSchema = schema::Schema<Expire,
-    schema::Bind<&Expire::key, schema::Arg<std::string>>,
-    schema::Bind<&Expire::seconds, schema::Arg<int64_t>>>;
+    schema::Field<&Expire::key, schema::Arg<std::string>>,
+    schema::Field<&Expire::seconds, schema::Arg<int64_t>>>;
 
 io::Reply ExecExpire(engine::Engine& e, const Expire& x) {
     bool ok = e.ExpireKey(x.key, std::chrono::seconds(x.seconds));

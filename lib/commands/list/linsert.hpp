@@ -5,11 +5,11 @@
 #include "engine/engine.hpp"
 #include "engine/replies.hpp"
 #include "io/reply.hpp"
-#include "schema/command_tree.hpp"
-#include "schema/rule.hpp"
+#include "commands/tree.hpp"
+#include "schema/combinators/field.hpp"
 #include "schema/schema.hpp"
-#include "schema/strategies/arg.hpp"
-#include "schema/strategies/choice.hpp"
+#include "schema/parsers/arg.hpp"
+#include "schema/parsers/choice.hpp"
 
 namespace valkey::commands {
 
@@ -21,10 +21,10 @@ struct LInsert {
 };
 
 using LInsertSchema = schema::Schema<LInsert,
-    schema::Bind<&LInsert::key, schema::Arg<std::string>>,
-    schema::Bind<&LInsert::before, schema::Choice<"BEFORE", "AFTER">>,
-    schema::Bind<&LInsert::pivot, schema::Arg<std::string>>,
-    schema::Bind<&LInsert::value, schema::Arg<std::string>>>;
+    schema::Field<&LInsert::key, schema::Arg<std::string>>,
+    schema::Field<&LInsert::before, schema::Choice<"BEFORE", "AFTER">>,
+    schema::Field<&LInsert::pivot, schema::Arg<std::string>>,
+    schema::Field<&LInsert::value, schema::Arg<std::string>>>;
 
 io::Reply ExecLInsert(engine::Engine& e, const LInsert& x) {
     int64_t new_len = -1;

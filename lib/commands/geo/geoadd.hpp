@@ -5,11 +5,11 @@
 #include "engine/engine.hpp"
 #include "engine/replies.hpp"
 #include "io/reply.hpp"
-#include "schema/command_tree.hpp"
-#include "schema/rule.hpp"
+#include "commands/tree.hpp"
+#include "schema/combinators/field.hpp"
 #include "schema/schema.hpp"
-#include "schema/strategies/arg.hpp"
-#include "schema/strategies/repeat.hpp"
+#include "schema/parsers/arg.hpp"
+#include "schema/combinators/repeat.hpp"
 #include "structures/geohash.hpp"
 
 namespace valkey::commands {
@@ -26,11 +26,11 @@ struct GeoAdd {
 };
 
 using GeoAddSchema = schema::Schema<GeoAdd,
-    schema::Bind<&GeoAdd::key, schema::Arg<std::string>>,
-    schema::Bind<&GeoAdd::entries, schema::RepeatValues<GeoAddEntry,
-        schema::Bind<&GeoAddEntry::lon, schema::Arg<double>>,
-        schema::Bind<&GeoAddEntry::lat, schema::Arg<double>>,
-        schema::Bind<&GeoAddEntry::member, schema::Arg<std::string>>>>>;
+    schema::Field<&GeoAdd::key, schema::Arg<std::string>>,
+    schema::Field<&GeoAdd::entries, schema::Repeat<GeoAddEntry,
+        schema::Field<&GeoAddEntry::lon, schema::Arg<double>>,
+        schema::Field<&GeoAddEntry::lat, schema::Arg<double>>,
+        schema::Field<&GeoAddEntry::member, schema::Arg<std::string>>>>>;
 
 io::Reply ExecGeoAdd(engine::Engine& e, const GeoAdd& x) {
     if (x.entries.empty()) {

@@ -3,12 +3,12 @@
 #include <cstdint>
 #include <string>
 
+#include "commands/tree.hpp"
 #include "engine/engine.hpp"
 #include "io/reply.hpp"
-#include "schema/command_tree.hpp"
-#include "schema/rule.hpp"
+#include "schema/combinators/field.hpp"
+#include "schema/parsers/arg.hpp"
 #include "schema/schema.hpp"
-#include "schema/strategies/arg.hpp"
 
 namespace valkey::commands {
 
@@ -17,7 +17,7 @@ struct MemoryUsage {
 };
 
 using MemoryUsageSchema = schema::Schema<MemoryUsage,
-    schema::Bind<&MemoryUsage::key, schema::Arg<std::string>>>;
+    schema::Field<&MemoryUsage::key, schema::Arg<std::string>>>;
 
 io::Reply ExecMemoryUsage(engine::Engine& e, const MemoryUsage& x) {
     return io::MakeInt(e.MemoryUsage(x.key));

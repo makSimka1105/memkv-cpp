@@ -8,10 +8,10 @@
 #include "engine/engine.hpp"
 #include "engine/replies.hpp"
 #include "io/reply.hpp"
-#include "schema/command_tree.hpp"
-#include "schema/rule.hpp"
+#include "commands/tree.hpp"
+#include "schema/combinators/field.hpp"
 #include "schema/schema.hpp"
-#include "schema/strategies/arg.hpp"
+#include "schema/parsers/arg.hpp"
 
 namespace valkey::commands {
 
@@ -22,9 +22,9 @@ struct ZCount {
 };
 
 using ZCountSchema = schema::Schema<ZCount,
-    schema::Bind<&ZCount::key, schema::Arg<std::string>>,
-    schema::Bind<&ZCount::min_str, schema::Arg<std::string>>,
-    schema::Bind<&ZCount::max_str, schema::Arg<std::string>>>;
+    schema::Field<&ZCount::key, schema::Arg<std::string>>,
+    schema::Field<&ZCount::min_str, schema::Arg<std::string>>,
+    schema::Field<&ZCount::max_str, schema::Arg<std::string>>>;
 
 namespace {
 

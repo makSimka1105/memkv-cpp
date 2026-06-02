@@ -8,10 +8,11 @@
 #include "engine/engine.hpp"
 #include "engine/replies.hpp"
 #include "io/reply.hpp"
-#include "schema/command_tree.hpp"
-#include "schema/rule.hpp"
+#include "commands/tree.hpp"
+#include "schema/combinators/field.hpp"
 #include "schema/schema.hpp"
-#include "schema/strategies/arg.hpp"
+#include "schema/parsers/arg.hpp"
+#include "schema/parsers/optional.hpp"
 
 namespace valkey::commands {
 
@@ -21,8 +22,8 @@ struct LPop {
 };
 
 using LPopSchema = schema::Schema<LPop,
-    schema::Bind<&LPop::key, schema::Arg<std::string>>,
-    schema::Bind<&LPop::count, schema::OptArg<std::optional<int64_t>>>>;
+    schema::Field<&LPop::key, schema::Arg<std::string>>,
+    schema::Field<&LPop::count, schema::Optional<std::optional<int64_t>>>>;
 
 io::Reply ExecLPop(engine::Engine& e, const LPop& x) {
     std::vector<std::string> popped;

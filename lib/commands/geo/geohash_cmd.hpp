@@ -4,11 +4,11 @@
 #include "engine/engine.hpp"
 #include "engine/replies.hpp"
 #include "io/reply.hpp"
-#include "schema/command_tree.hpp"
-#include "schema/rule.hpp"
+#include "commands/tree.hpp"
+#include "schema/combinators/field.hpp"
 #include "schema/schema.hpp"
-#include "schema/strategies/arg.hpp"
-#include "schema/strategies/variadic.hpp"
+#include "schema/parsers/arg.hpp"
+#include "schema/parsers/variadic.hpp"
 #include "structures/geohash.hpp"
 
 namespace valkey::commands {
@@ -19,8 +19,8 @@ struct GeoHash {
 };
 
 using GeoHashSchema = schema::Schema<GeoHash,
-    schema::Bind<&GeoHash::key, schema::Arg<std::string>>,
-    schema::Bind<&GeoHash::members, schema::Variadic<std::string, 1>>>;
+    schema::Field<&GeoHash::key, schema::Arg<std::string>>,
+    schema::Field<&GeoHash::members, schema::Variadic<std::string, 1>>>;
 
 io::Reply ExecGeoHash(engine::Engine& e, const GeoHash& x) {
     auto [ptr, st] = e.As<types::ZSet>(x.key);

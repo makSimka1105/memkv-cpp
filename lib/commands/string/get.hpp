@@ -5,10 +5,10 @@
 #include "engine/engine.hpp"
 #include "engine/replies.hpp"
 #include "io/reply.hpp"
-#include "schema/command_tree.hpp"
-#include "schema/rule.hpp"
+#include "commands/tree.hpp"
+#include "schema/combinators/field.hpp"
 #include "schema/schema.hpp"
-#include "schema/strategies/arg.hpp"
+#include "schema/parsers/arg.hpp"
 
 namespace valkey::commands {
 
@@ -16,7 +16,7 @@ struct Get {
     std::string key;
 };
 
-using GetSchema = schema::Schema<Get, schema::Bind<&Get::key, schema::Arg<std::string>>>;
+using GetSchema = schema::Schema<Get, schema::Field<&Get::key, schema::Arg<std::string>>>;
 
 io::Reply ExecGet(engine::Engine& e, const Get& x) {
     auto [s, st] = e.As<std::string>(x.key);

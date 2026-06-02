@@ -7,10 +7,11 @@
 #include "engine/engine.hpp"
 #include "engine/replies.hpp"
 #include "io/reply.hpp"
-#include "schema/command_tree.hpp"
-#include "schema/rule.hpp"
+#include "commands/tree.hpp"
+#include "schema/combinators/field.hpp"
 #include "schema/schema.hpp"
-#include "schema/strategies/arg.hpp"
+#include "schema/parsers/arg.hpp"
+#include "schema/parsers/optional.hpp"
 
 namespace valkey::commands {
 
@@ -20,8 +21,8 @@ struct ZPopMin {
 };
 
 using ZPopMinSchema = schema::Schema<ZPopMin,
-    schema::Bind<&ZPopMin::key, schema::Arg<std::string>>,
-    schema::Bind<&ZPopMin::count, schema::OptArg<std::optional<int64_t>>>>;
+    schema::Field<&ZPopMin::key, schema::Arg<std::string>>,
+    schema::Field<&ZPopMin::count, schema::Optional<std::optional<int64_t>>>>;
 
 io::Reply ExecZPopMin(engine::Engine& e, const ZPopMin& x) {
     size_t n = x.count.value_or(1);

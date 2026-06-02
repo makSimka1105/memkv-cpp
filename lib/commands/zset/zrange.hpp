@@ -7,11 +7,11 @@
 #include "engine/engine.hpp"
 #include "engine/replies.hpp"
 #include "io/reply.hpp"
-#include "schema/command_tree.hpp"
-#include "schema/rule.hpp"
+#include "commands/tree.hpp"
+#include "schema/combinators/field.hpp"
 #include "schema/schema.hpp"
-#include "schema/strategies/arg.hpp"
-#include "schema/strategies/flag.hpp"
+#include "schema/parsers/arg.hpp"
+#include "schema/parsers/flag.hpp"
 
 namespace valkey::commands {
 
@@ -23,10 +23,10 @@ struct ZRange {
 };
 
 using ZRangeSchema = schema::Schema<ZRange,
-    schema::Bind<&ZRange::key, schema::Arg<std::string>>,
-    schema::Bind<&ZRange::start, schema::Arg<int64_t>>,
-    schema::Bind<&ZRange::stop, schema::Arg<int64_t>>,
-    schema::Bind<&ZRange::withscores, schema::Flag<"WITHSCORES">>>;
+    schema::Field<&ZRange::key, schema::Arg<std::string>>,
+    schema::Field<&ZRange::start, schema::Arg<int64_t>>,
+    schema::Field<&ZRange::stop, schema::Arg<int64_t>>,
+    schema::Field<&ZRange::withscores, schema::Flag<"WITHSCORES">>>;
 
 io::Reply ExecZRange(engine::Engine& e, const ZRange& x) {
     auto [ptr, st] = e.As<types::ZSet>(x.key);

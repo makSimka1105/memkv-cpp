@@ -3,12 +3,12 @@
 #include <string>
 #include <vector>
 
+#include "commands/tree.hpp"
 #include "engine/engine.hpp"
 #include "io/reply.hpp"
-#include "schema/command_tree.hpp"
-#include "schema/rule.hpp"
+#include "schema/combinators/field.hpp"
+#include "schema/parsers/arg.hpp"
 #include "schema/schema.hpp"
-#include "schema/strategies/arg.hpp"
 
 namespace valkey::commands {
 
@@ -16,7 +16,7 @@ struct Keys {
     std::string pattern;
 };
 
-using KeysSchema = schema::Schema<Keys, schema::Bind<&Keys::pattern, schema::Arg<std::string>>>;
+using KeysSchema = schema::Schema<Keys, schema::Field<&Keys::pattern, schema::Arg<std::string>>>;
 
 io::Reply ExecKeys(engine::Engine& e, const Keys& x) {
     auto keys = e.Keys(x.pattern);

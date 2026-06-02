@@ -5,11 +5,12 @@
 #include "engine/engine.hpp"
 #include "engine/replies.hpp"
 #include "io/reply.hpp"
-#include "schema/command_tree.hpp"
-#include "schema/rule.hpp"
+#include "commands/tree.hpp"
+#include "schema/combinators/field.hpp"
 #include "schema/schema.hpp"
-#include "schema/strategies/arg.hpp"
-#include "schema/strategies/repeat.hpp"
+#include "schema/parsers/arg.hpp"
+#include "schema/combinators/repeat.hpp"
+#include "types/all.hpp"
 
 namespace valkey::commands {
 
@@ -24,10 +25,10 @@ struct ZAdd {
 };
 
 using ZAddSchema = schema::Schema<ZAdd,
-    schema::Bind<&ZAdd::key, schema::Arg<std::string>>,
-    schema::Bind<&ZAdd::entries, schema::RepeatValues<ZAddEntry,
-        schema::Bind<&ZAddEntry::score, schema::Arg<double>>,
-        schema::Bind<&ZAddEntry::member, schema::Arg<std::string>>>>>;
+    schema::Field<&ZAdd::key, schema::Arg<std::string>>,
+    schema::Field<&ZAdd::entries, schema::Repeat<ZAddEntry,
+        schema::Field<&ZAddEntry::score, schema::Arg<double>>,
+        schema::Field<&ZAddEntry::member, schema::Arg<std::string>>>>>;
 
 io::Reply ExecZAdd(engine::Engine& e, const ZAdd& x) {
     if (x.entries.empty()) {

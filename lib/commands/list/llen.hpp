@@ -4,10 +4,10 @@
 #include "engine/engine.hpp"
 #include "engine/replies.hpp"
 #include "io/reply.hpp"
-#include "schema/command_tree.hpp"
-#include "schema/rule.hpp"
+#include "commands/tree.hpp"
+#include "schema/combinators/field.hpp"
 #include "schema/schema.hpp"
-#include "schema/strategies/arg.hpp"
+#include "schema/parsers/arg.hpp"
 
 namespace valkey::commands {
 
@@ -15,7 +15,7 @@ struct LLen {
     std::string key;
 };
 
-using LLenSchema = schema::Schema<LLen, schema::Bind<&LLen::key, schema::Arg<std::string>>>;
+using LLenSchema = schema::Schema<LLen, schema::Field<&LLen::key, schema::Arg<std::string>>>;
 
 io::Reply ExecLLen(engine::Engine& e, const LLen& x) {
     auto [lst, st] = e.As<types::List>(x.key);

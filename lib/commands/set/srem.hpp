@@ -5,11 +5,11 @@
 #include "engine/engine.hpp"
 #include "engine/replies.hpp"
 #include "io/reply.hpp"
-#include "schema/command_tree.hpp"
-#include "schema/rule.hpp"
+#include "commands/tree.hpp"
+#include "schema/combinators/field.hpp"
 #include "schema/schema.hpp"
-#include "schema/strategies/arg.hpp"
-#include "schema/strategies/variadic.hpp"
+#include "schema/parsers/arg.hpp"
+#include "schema/parsers/variadic.hpp"
 
 namespace valkey::commands {
 
@@ -19,8 +19,8 @@ struct SRem {
 };
 
 using SRemSchema = schema::Schema<SRem,
-    schema::Bind<&SRem::key, schema::Arg<std::string>>,
-    schema::Bind<&SRem::members, schema::Variadic<std::string, 1>>>;
+    schema::Field<&SRem::key, schema::Arg<std::string>>,
+    schema::Field<&SRem::members, schema::Variadic<std::string, 1>>>;
 
 io::Reply ExecSRem(engine::Engine& e, const SRem& x) {
     int64_t removed = 0;

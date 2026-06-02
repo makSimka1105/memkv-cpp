@@ -4,10 +4,10 @@
 #include "engine/engine.hpp"
 #include "engine/replies.hpp"
 #include "io/reply.hpp"
-#include "schema/command_tree.hpp"
-#include "schema/rule.hpp"
+#include "commands/tree.hpp"
+#include "schema/combinators/field.hpp"
 #include "schema/schema.hpp"
-#include "schema/strategies/arg.hpp"
+#include "schema/parsers/arg.hpp"
 
 namespace valkey::commands {
 
@@ -18,9 +18,9 @@ struct ZIncrBy {
 };
 
 using ZIncrBySchema = schema::Schema<ZIncrBy,
-    schema::Bind<&ZIncrBy::key, schema::Arg<std::string>>,
-    schema::Bind<&ZIncrBy::increment, schema::Arg<double>>,
-    schema::Bind<&ZIncrBy::member, schema::Arg<std::string>>>;
+    schema::Field<&ZIncrBy::key, schema::Arg<std::string>>,
+    schema::Field<&ZIncrBy::increment, schema::Arg<double>>,
+    schema::Field<&ZIncrBy::member, schema::Arg<std::string>>>;
 
 io::Reply ExecZIncrBy(engine::Engine& e, const ZIncrBy& x) {
     double new_score = 0.0;

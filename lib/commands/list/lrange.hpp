@@ -6,10 +6,10 @@
 #include "engine/engine.hpp"
 #include "engine/replies.hpp"
 #include "io/reply.hpp"
-#include "schema/command_tree.hpp"
-#include "schema/rule.hpp"
+#include "commands/tree.hpp"
+#include "schema/combinators/field.hpp"
 #include "schema/schema.hpp"
-#include "schema/strategies/arg.hpp"
+#include "schema/parsers/arg.hpp"
 
 namespace valkey::commands {
 
@@ -20,9 +20,9 @@ struct LRange {
 };
 
 using LRangeSchema = schema::Schema<LRange,
-    schema::Bind<&LRange::key, schema::Arg<std::string>>,
-    schema::Bind<&LRange::start, schema::Arg<int64_t>>,
-    schema::Bind<&LRange::stop, schema::Arg<int64_t>>>;
+    schema::Field<&LRange::key, schema::Arg<std::string>>,
+    schema::Field<&LRange::start, schema::Arg<int64_t>>,
+    schema::Field<&LRange::stop, schema::Arg<int64_t>>>;
 
 io::Reply ExecLRange(engine::Engine& e, const LRange& x) {
     auto [lst, st] = e.As<types::List>(x.key);

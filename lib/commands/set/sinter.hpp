@@ -4,10 +4,10 @@
 #include "engine/engine.hpp"
 #include "engine/replies.hpp"
 #include "io/reply.hpp"
-#include "schema/command_tree.hpp"
-#include "schema/rule.hpp"
+#include "commands/tree.hpp"
+#include "schema/combinators/field.hpp"
 #include "schema/schema.hpp"
-#include "schema/strategies/variadic.hpp"
+#include "schema/parsers/variadic.hpp"
 
 namespace valkey::commands {
 
@@ -16,7 +16,7 @@ struct SInter {
 };
 
 using SInterSchema = schema::Schema<SInter,
-    schema::Bind<&SInter::keys, schema::Variadic<std::string, 1>>>;
+    schema::Field<&SInter::keys, schema::Variadic<std::string, 1>>>;
 
 io::Reply ExecSInter(engine::Engine& e, const SInter& x) {
     auto [first, st0] = e.As<types::Set>(x.keys[0]);

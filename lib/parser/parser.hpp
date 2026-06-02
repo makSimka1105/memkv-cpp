@@ -11,7 +11,7 @@
 #include "meta/type_list.hpp"
 #include "parser/cmd.hpp"
 #include "parser/error.hpp"
-#include "parser/token_convert.hpp"
+#include "util/str.hpp"
 
 namespace valkey::parser {
 
@@ -31,14 +31,8 @@ std::expected<Cmd, ParseError> DispatchNode(std::span<const Token> tokens,
             if (full_name.empty()) {
                 return std::unexpected(ParseError{"ERR empty input", 0});
             }
-            std::string lower(full_name);
-            for (char& c : lower) {
-                if (c >= 'A' && c <= 'Z') {
-                    c = static_cast<char>(c - 'A' + 'a');
-                }
-            }
-            return std::unexpected(
-                ParseError{"ERR wrong number of arguments for '" + lower + "' command", 0});
+            return std::unexpected(ParseError{
+                "ERR wrong number of arguments for '" + LowerName(full_name) + "' command", 0});
         }
         const auto* sub = std::get_if<TkWord>(&tokens[0]);
         if (!sub) {
@@ -51,12 +45,11 @@ std::expected<Cmd, ParseError> DispatchNode(std::span<const Token> tokens,
 
 template <class... Traits>
 std::expected<Cmd, ParseError> DispatchList(std::span<const Token> tokens, std::string_view word,
-                                            std::string_view full_prefix,
-                                            TraitsList<Traits...>) {
-    std::expected<Cmd, ParseError> result = std::unexpected(ParseError{
-        (full_prefix.empty() ? "ERR unknown command '" : "ERR unknown subcommand '") +
-            std::string(word) + "'",
-        0});
+                                            std::string_view full_prefix, TraitsList<Traits...>) {
+    std::expected<Cmd, ParseError> result = std::unexpected(
+        ParseError{(full_prefix.empty() ? "ERR unknown command '" : "ERR unknown subcommand '") +
+                       std::string(word) + "'",
+                   0});
 
     ((CaseEqual(Traits::kName, word) &&
       [&] {

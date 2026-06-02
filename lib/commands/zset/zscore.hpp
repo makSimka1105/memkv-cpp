@@ -4,10 +4,10 @@
 #include "engine/engine.hpp"
 #include "engine/replies.hpp"
 #include "io/reply.hpp"
-#include "schema/command_tree.hpp"
-#include "schema/rule.hpp"
+#include "commands/tree.hpp"
+#include "schema/combinators/field.hpp"
 #include "schema/schema.hpp"
-#include "schema/strategies/arg.hpp"
+#include "schema/parsers/arg.hpp"
 
 namespace valkey::commands {
 
@@ -17,8 +17,8 @@ struct ZScore {
 };
 
 using ZScoreSchema = schema::Schema<ZScore,
-    schema::Bind<&ZScore::key, schema::Arg<std::string>>,
-    schema::Bind<&ZScore::member, schema::Arg<std::string>>>;
+    schema::Field<&ZScore::key, schema::Arg<std::string>>,
+    schema::Field<&ZScore::member, schema::Arg<std::string>>>;
 
 io::Reply ExecZScore(engine::Engine& e, const ZScore& x) {
     auto [ptr, st] = e.As<types::ZSet>(x.key);

@@ -4,10 +4,10 @@
 #include "engine/engine.hpp"
 #include "engine/replies.hpp"
 #include "io/reply.hpp"
-#include "schema/command_tree.hpp"
-#include "schema/rule.hpp"
+#include "commands/tree.hpp"
+#include "schema/combinators/field.hpp"
 #include "schema/schema.hpp"
-#include "schema/strategies/arg.hpp"
+#include "schema/parsers/arg.hpp"
 
 namespace valkey::commands {
 
@@ -15,7 +15,7 @@ struct SCard {
     std::string key;
 };
 
-using SCardSchema = schema::Schema<SCard, schema::Bind<&SCard::key, schema::Arg<std::string>>>;
+using SCardSchema = schema::Schema<SCard, schema::Field<&SCard::key, schema::Arg<std::string>>>;
 
 io::Reply ExecSCard(engine::Engine& e, const SCard& x) {
     auto [s, st] = e.As<types::Set>(x.key);

@@ -3,10 +3,10 @@
 #include "engine/engine.hpp"
 #include "engine/replies.hpp"
 #include "io/reply.hpp"
-#include "schema/command_tree.hpp"
-#include "schema/rule.hpp"
+#include "commands/tree.hpp"
+#include "schema/combinators/field.hpp"
 #include "schema/schema.hpp"
-#include "schema/strategies/arg.hpp"
+#include "schema/parsers/arg.hpp"
 
 namespace valkey::commands {
 
@@ -17,9 +17,9 @@ struct SMove {
 };
 
 using SMoveSchema = schema::Schema<SMove,
-    schema::Bind<&SMove::source, schema::Arg<std::string>>,
-    schema::Bind<&SMove::dest, schema::Arg<std::string>>,
-    schema::Bind<&SMove::member, schema::Arg<std::string>>>;
+    schema::Field<&SMove::source, schema::Arg<std::string>>,
+    schema::Field<&SMove::dest, schema::Arg<std::string>>,
+    schema::Field<&SMove::member, schema::Arg<std::string>>>;
 
 io::Reply ExecSMove(engine::Engine& e, const SMove& x) {
     bool removed = false;

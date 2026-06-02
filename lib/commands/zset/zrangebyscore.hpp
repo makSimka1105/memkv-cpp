@@ -9,11 +9,11 @@
 #include "engine/engine.hpp"
 #include "engine/replies.hpp"
 #include "io/reply.hpp"
-#include "schema/command_tree.hpp"
-#include "schema/rule.hpp"
+#include "commands/tree.hpp"
+#include "schema/combinators/field.hpp"
 #include "schema/schema.hpp"
-#include "schema/strategies/arg.hpp"
-#include "schema/strategies/flag.hpp"
+#include "schema/parsers/arg.hpp"
+#include "schema/parsers/flag.hpp"
 
 namespace valkey::commands {
 
@@ -25,10 +25,10 @@ struct ZRangeByScore {
 };
 
 using ZRangeByScoreSchema = schema::Schema<ZRangeByScore,
-    schema::Bind<&ZRangeByScore::key, schema::Arg<std::string>>,
-    schema::Bind<&ZRangeByScore::min_str, schema::Arg<std::string>>,
-    schema::Bind<&ZRangeByScore::max_str, schema::Arg<std::string>>,
-    schema::Bind<&ZRangeByScore::withscores, schema::Flag<"WITHSCORES">>>;
+    schema::Field<&ZRangeByScore::key, schema::Arg<std::string>>,
+    schema::Field<&ZRangeByScore::min_str, schema::Arg<std::string>>,
+    schema::Field<&ZRangeByScore::max_str, schema::Arg<std::string>>,
+    schema::Field<&ZRangeByScore::withscores, schema::Flag<"WITHSCORES">>>;
 
 namespace {
 

@@ -10,6 +10,7 @@
 #include "lexer/types.hpp"
 #include "parser/error.hpp"
 #include "parser/token_convert.hpp"
+#include "util/str.hpp"
 
 namespace valkey::parser {
 

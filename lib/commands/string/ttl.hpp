@@ -3,10 +3,10 @@
 #include <string>
 #include "engine/engine.hpp"
 #include "io/reply.hpp"
-#include "schema/command_tree.hpp"
-#include "schema/rule.hpp"
+#include "commands/tree.hpp"
+#include "schema/combinators/field.hpp"
 #include "schema/schema.hpp"
-#include "schema/strategies/arg.hpp"
+#include "schema/parsers/arg.hpp"
 
 namespace valkey::commands {
 
@@ -14,7 +14,7 @@ struct Ttl {
     std::string key;
 };
 
-using TtlSchema = schema::Schema<Ttl, schema::Bind<&Ttl::key, schema::Arg<std::string>>>;
+using TtlSchema = schema::Schema<Ttl, schema::Field<&Ttl::key, schema::Arg<std::string>>>;
 
 io::Reply ExecTtl(engine::Engine& e, const Ttl& x) {
     return io::MakeInt(e.TtlSeconds(x.key));

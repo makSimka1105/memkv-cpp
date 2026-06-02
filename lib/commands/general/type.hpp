@@ -2,12 +2,12 @@
 
 #include <string>
 
+#include "commands/tree.hpp"
 #include "engine/engine.hpp"
 #include "io/reply.hpp"
-#include "schema/command_tree.hpp"
-#include "schema/rule.hpp"
+#include "schema/combinators/field.hpp"
+#include "schema/parsers/arg.hpp"
 #include "schema/schema.hpp"
-#include "schema/strategies/arg.hpp"
 
 namespace valkey::commands {
 
@@ -15,7 +15,7 @@ struct Type {
     std::string key;
 };
 
-using TypeSchema = schema::Schema<Type, schema::Bind<&Type::key, schema::Arg<std::string>>>;
+using TypeSchema = schema::Schema<Type, schema::Field<&Type::key, schema::Arg<std::string>>>;
 
 io::Reply ExecType(engine::Engine& e, const Type& x) {
     return io::SimpleStr{std::string(e.TypeOf(x.key))};

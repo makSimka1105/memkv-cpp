@@ -5,7 +5,6 @@
 #include <expected>
 #include <span>
 #include <string>
-#include <string_view>
 #include <utility>
 #include <variant>
 #include <vector>
@@ -75,22 +74,6 @@ std::expected<std::vector<std::string>, ParseError> CollectStrings(
         out.push_back(std::move(*s));
     }
     return out;
-}
-
-constexpr char ToUpper(char c) {
-    return (c >= 'a' && c <= 'z') ? static_cast<char>(c - 'a' + 'A') : c;
-}
-
-constexpr bool CaseEqual(std::string_view a, std::string_view b) {
-    if (a.size() != b.size()) {
-        return false;
-    }
-    for (size_t i = 0; i < a.size(); ++i) {
-        if (ToUpper(a[i]) != ToUpper(b[i])) {
-            return false;
-        }
-    }
-    return true;
 }
 
 }  // namespace valkey::parser

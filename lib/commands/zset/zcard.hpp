@@ -4,10 +4,10 @@
 #include "engine/engine.hpp"
 #include "engine/replies.hpp"
 #include "io/reply.hpp"
-#include "schema/command_tree.hpp"
-#include "schema/rule.hpp"
+#include "commands/tree.hpp"
+#include "schema/combinators/field.hpp"
 #include "schema/schema.hpp"
-#include "schema/strategies/arg.hpp"
+#include "schema/parsers/arg.hpp"
 
 namespace valkey::commands {
 
@@ -16,7 +16,7 @@ struct ZCard {
 };
 
 using ZCardSchema = schema::Schema<ZCard,
-    schema::Bind<&ZCard::key, schema::Arg<std::string>>>;
+    schema::Field<&ZCard::key, schema::Arg<std::string>>>;
 
 io::Reply ExecZCard(engine::Engine& e, const ZCard& x) {
     auto [ptr, st] = e.As<types::ZSet>(x.key);

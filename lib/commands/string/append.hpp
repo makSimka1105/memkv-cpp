@@ -4,10 +4,10 @@
 #include "engine/engine.hpp"
 #include "engine/replies.hpp"
 #include "io/reply.hpp"
-#include "schema/command_tree.hpp"
-#include "schema/rule.hpp"
+#include "commands/tree.hpp"
+#include "schema/combinators/field.hpp"
 #include "schema/schema.hpp"
-#include "schema/strategies/arg.hpp"
+#include "schema/parsers/arg.hpp"
 
 namespace valkey::commands {
 
@@ -17,8 +17,8 @@ struct Append {
 };
 
 using AppendSchema = schema::Schema<Append,
-    schema::Bind<&Append::key, schema::Arg<std::string>>,
-    schema::Bind<&Append::value, schema::Arg<std::string>>>;
+    schema::Field<&Append::key, schema::Arg<std::string>>,
+    schema::Field<&Append::value, schema::Arg<std::string>>>;
 
 io::Reply ExecAppend(engine::Engine& e, const Append& x) {
     int64_t new_len = 0;

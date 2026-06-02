@@ -2,24 +2,18 @@
 
 #include <variant>
 
-#include "commands/all.hpp"
+#include "all.hpp"
+#include "engine/eval.hpp"
+#include "commands/tree.hpp"
 #include "engine/engine.hpp"
 #include "io/reply.hpp"
-#include "schema/command_tree.hpp"
-#include "meta/overload.hpp"
-#include "meta/type_list.hpp"
 #include "parser/cmd.hpp"
 
 namespace valkey::engine {
 
-template <class... Traits>
-auto MakeDispatcher(Engine& eng, TraitsList<Traits...>) {
-    return Overload{
-        [&eng](const typename Traits::Type& c) -> io::Reply { return Traits::kExecFn(eng, c); }...};
-}
-
-io::Reply Eval(Engine& eng, const parser::Cmd& cmd) {
-    return std::visit(MakeDispatcher(eng, FlattenLeaves<commands::RootGroup>{}), cmd);
+io::Reply Eval(engine::Engine& eng, const parser::Cmd& cmd) {
+    return std::visit(MakeDispatcher<commands::FlattenLeaves<commands::RootGroup>>(eng),
+                      cmd);
 }
 
 }  // namespace valkey::engine

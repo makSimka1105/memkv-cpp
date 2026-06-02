@@ -4,10 +4,10 @@
 #include "engine/engine.hpp"
 #include "engine/replies.hpp"
 #include "io/reply.hpp"
-#include "schema/command_tree.hpp"
-#include "schema/rule.hpp"
+#include "commands/tree.hpp"
+#include "schema/combinators/field.hpp"
 #include "schema/schema.hpp"
-#include "schema/strategies/arg.hpp"
+#include "schema/parsers/arg.hpp"
 
 namespace valkey::commands {
 
@@ -17,8 +17,8 @@ struct ZRank {
 };
 
 using ZRankSchema = schema::Schema<ZRank,
-    schema::Bind<&ZRank::key, schema::Arg<std::string>>,
-    schema::Bind<&ZRank::member, schema::Arg<std::string>>>;
+    schema::Field<&ZRank::key, schema::Arg<std::string>>,
+    schema::Field<&ZRank::member, schema::Arg<std::string>>>;
 
 io::Reply ExecZRank(engine::Engine& e, const ZRank& x) {
     auto [ptr, st] = e.As<types::ZSet>(x.key);

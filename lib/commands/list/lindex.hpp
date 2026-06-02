@@ -4,10 +4,10 @@
 #include "engine/engine.hpp"
 #include "engine/replies.hpp"
 #include "io/reply.hpp"
-#include "schema/command_tree.hpp"
-#include "schema/rule.hpp"
+#include "commands/tree.hpp"
+#include "schema/combinators/field.hpp"
 #include "schema/schema.hpp"
-#include "schema/strategies/arg.hpp"
+#include "schema/parsers/arg.hpp"
 
 namespace valkey::commands {
 
@@ -17,8 +17,8 @@ struct LIndex {
 };
 
 using LIndexSchema = schema::Schema<LIndex,
-    schema::Bind<&LIndex::key, schema::Arg<std::string>>,
-    schema::Bind<&LIndex::index, schema::Arg<int64_t>>>;
+    schema::Field<&LIndex::key, schema::Arg<std::string>>,
+    schema::Field<&LIndex::index, schema::Arg<int64_t>>>;
 
 io::Reply ExecLIndex(engine::Engine& e, const LIndex& x) {
     auto [lst, st] = e.As<types::List>(x.key);

@@ -4,10 +4,10 @@
 #include "engine/engine.hpp"
 #include "engine/replies.hpp"
 #include "io/reply.hpp"
-#include "schema/command_tree.hpp"
-#include "schema/rule.hpp"
+#include "commands/tree.hpp"
+#include "schema/combinators/field.hpp"
 #include "schema/schema.hpp"
-#include "schema/strategies/arg.hpp"
+#include "schema/parsers/arg.hpp"
 
 namespace valkey::commands {
 
@@ -16,7 +16,7 @@ struct SMembers {
 };
 
 using SMembersSchema = schema::Schema<SMembers,
-    schema::Bind<&SMembers::key, schema::Arg<std::string>>>;
+    schema::Field<&SMembers::key, schema::Arg<std::string>>>;
 
 io::Reply ExecSMembers(engine::Engine& e, const SMembers& x) {
     auto [s, st] = e.As<types::Set>(x.key);

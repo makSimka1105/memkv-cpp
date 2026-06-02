@@ -5,10 +5,10 @@
 #include "engine/engine.hpp"
 #include "engine/replies.hpp"
 #include "io/reply.hpp"
-#include "schema/command_tree.hpp"
-#include "schema/rule.hpp"
+#include "commands/tree.hpp"
+#include "schema/combinators/field.hpp"
 #include "schema/schema.hpp"
-#include "schema/strategies/arg.hpp"
+#include "schema/parsers/arg.hpp"
 
 namespace valkey::commands {
 
@@ -17,8 +17,8 @@ struct Set {
     std::string value;
 };
 
-using SetSchema = schema::Schema<Set, schema::Bind<&Set::key, schema::Arg<std::string>>,
-                                 schema::Bind<&Set::value, schema::Arg<std::string>>>;
+using SetSchema = schema::Schema<Set, schema::Field<&Set::key, schema::Arg<std::string>>,
+                                 schema::Field<&Set::value, schema::Arg<std::string>>>;
 
 io::Reply ExecSet(engine::Engine& e, const Set& x) {
     if (!e.SetString(x.key, x.value)) {
