@@ -3,6 +3,7 @@
 #include <cstddef>
 #include <expected>
 #include <optional>
+#include <utility>
 
 #include "parser/cursor.hpp"
 #include "parser/errors.hpp"
@@ -26,7 +27,7 @@ struct Optional {
             cursor.Restore(saved_pos);
             return Type{};
         }
-        return *result;
+        return std::move(*result);
     }
 };
 
@@ -46,7 +47,7 @@ struct Optional<std::optional<Type>> {
             cursor.Restore(saved_pos);
             return std::nullopt;
         }
-        return *result;
+        return std::move(*result);
     }
 };
 

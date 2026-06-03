@@ -3,6 +3,7 @@
 #include <cstddef>
 #include <expected>
 #include <string_view>
+#include <utility>
 
 #include "parser/cursor.hpp"
 #include "parser/errors.hpp"
@@ -26,7 +27,7 @@ struct Opt {
             cursor.Restore(saved_pos);
             return Output{};
         }
-        return *result;
+        return std::move(*result);
     }
 
     static constexpr bool MatchesKeyword(std::string_view word)

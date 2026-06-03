@@ -1,10 +1,7 @@
 #pragma once
 
 #include <algorithm>
-#include <array>
-#include <cstddef>
 #include <cstdint>
-#include <string>
 #include <utility>
 
 namespace valkey::structures::geohash {
@@ -41,51 +38,6 @@ std::pair<double, double> Decode(double score) {
     double lat = static_cast<double>(lat_bits) / kScale * (kLatMax - kLatMin) + kLatMin;
     double lon = static_cast<double>(lon_bits) / kScale * (kLonMax - kLonMin) + kLonMin;
     return {lon, lat};
-}
-
-// Returns an 11-character standard base32 geohash string for the GEOHASH command.
-std::string ToBase32(double score) {
-    static constexpr std::string_view kAlphabet = "0123456789bcdefghjkmnpqrstuvwxyz";
-    static constexpr int kChars = 11;
-
-    auto [lon, lat] = Decode(score);
-
-    double min_lon = kLonMin;
-    double max_lon = kLonMax;
-    double min_lat = -90.0;
-    double max_lat = 90.0;
-
-    std::array<int, kChars> bits{};
-    bool is_lon = true;
-
-    for (int i = 0; i < kChars * 5; ++i) {
-        int char_idx = i / 5;
-        int bit_pos = 4 - (i % 5);
-        if (is_lon) {
-            double mid = (min_lon + max_lon) / 2.0;
-            if (lon >= mid) {
-                bits[char_idx] |= (1 << bit_pos);
-                min_lon = mid;
-            } else {
-                max_lon = mid;
-            }
-        } else {
-            double mid = (min_lat + max_lat) / 2.0;
-            if (lat >= mid) {
-                bits[char_idx] |= (1 << bit_pos);
-                min_lat = mid;
-            } else {
-                max_lat = mid;
-            }
-        }
-        is_lon = !is_lon;
-    }
-
-    std::string result(kChars, '\0');
-    for (int i = 0; i < kChars; ++i) {
-        result[i] = kAlphabet[bits[i]];
-    }
-    return result;
 }
 
 }  // namespace valkey::structures::geohash

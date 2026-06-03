@@ -33,7 +33,7 @@ struct Schema {
         if (!cursor.Done()) {
             return parser::err::SyntaxError(cursor.Pos());
         }
-        return std::move(node);
+        return node;
     }
 };
 

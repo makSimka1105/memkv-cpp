@@ -52,7 +52,6 @@
 #include "geo/geoadd.hpp"
 #include "geo/geopos.hpp"
 #include "geo/geodist.hpp"
-#include "geo/geohash_cmd.hpp"
 #include "geo/geosearch.hpp"
 #include "geo/geosearchstore.hpp"
 #include "commands/tree.hpp"
@@ -116,7 +115,6 @@ using RootGroup = CommandGroup<"",
     LeafCommand<GeoAddTrait>,
     LeafCommand<GeoPosTrait>,
     LeafCommand<GeoDistTrait>,
-    LeafCommand<GeoHashTrait>,
     LeafCommand<GeoSearchTrait>,
     LeafCommand<GeoSearchStoreTrait>
 >;
