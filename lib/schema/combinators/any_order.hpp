@@ -27,7 +27,7 @@ struct AnyOrder {
         bool used[sizeof...(Fields)] = {};
         std::expected<void, parser::ParseError> applied{};
         while (!cursor.Done()) {
-            auto peeked_word = cursor.PeekString();
+            auto peeked_word = cursor.PeekStringView();
             if (!peeked_word) {
                 break;
             }
@@ -55,7 +55,7 @@ struct AnyOrder {
                 if constexpr (FieldRequired<Field>()) {
                     if (result) {
                         result =
-                            std::unexpected(parser::ParseError{"ERR syntax error", cursor.Pos()});
+                            parser::err::SyntaxError(cursor.Pos());
                     }
                 } else {
                     Field::ApplyDefault(node);

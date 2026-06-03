@@ -20,10 +20,10 @@ struct Optional {
         if (cursor.Done()) {
             return Type{};
         }
-        size_t saved_pos = cursor.pos;
+        size_t saved_pos = cursor.Pos();
         auto result = ScanValue<Type>(cursor);
         if (!result) {
-            cursor.pos = saved_pos;
+            cursor.Restore(saved_pos);
             return Type{};
         }
         return *result;
@@ -40,10 +40,10 @@ struct Optional<std::optional<Type>> {
         if (cursor.Done()) {
             return std::nullopt;
         }
-        size_t saved_pos = cursor.pos;
+        size_t saved_pos = cursor.Pos();
         auto result = ScanValue<Type>(cursor);
         if (!result) {
-            cursor.pos = saved_pos;
+            cursor.Restore(saved_pos);
             return std::nullopt;
         }
         return *result;

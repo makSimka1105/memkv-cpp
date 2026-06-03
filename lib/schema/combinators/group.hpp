@@ -22,7 +22,7 @@ struct Group {
 
     static std::expected<Node, parser::ParseError> Parse(parser::Cursor& cursor) {
         if (!cursor.MatchKeyword(Kw)) {
-            return std::unexpected(parser::ParseError{"ERR syntax error", cursor.Pos()});
+            return parser::err::SyntaxError(cursor.Pos());
         }
         Node node{};
         auto result = ApplyFields<Fields...>(cursor, node);

@@ -20,10 +20,10 @@ struct Opt {
         if (cursor.Done()) {
             return Output{};
         }
-        size_t saved_pos = cursor.pos;
+        size_t saved_pos = cursor.Pos();
         auto result = InnerParser::Parse(cursor);
         if (!result) {
-            cursor.pos = saved_pos;
+            cursor.Restore(saved_pos);
             return Output{};
         }
         return *result;

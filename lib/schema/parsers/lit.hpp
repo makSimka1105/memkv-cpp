@@ -12,7 +12,7 @@ struct Lit {
     template <class Node>
     static std::expected<void, parser::ParseError> Apply(parser::Cursor& cursor, Node&) {
         if (!cursor.MatchKeyword(Kw)) {
-            return std::unexpected(parser::ParseError{"ERR syntax error", cursor.Pos()});
+            return parser::err::SyntaxError(cursor.Pos());
         }
         return {};
     }

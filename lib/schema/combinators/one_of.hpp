@@ -22,13 +22,13 @@ struct OneOf {
     static constexpr size_t kMaxArgc = std::max({Members::kMaxArgc...});
 
     static std::expected<Output, parser::ParseError> Parse(parser::Cursor& cursor) {
-        auto peeked_word = cursor.PeekString();
+        auto peeked_word = cursor.PeekStringView();
         if (!peeked_word) {
-            return std::unexpected(parser::ParseError{"ERR syntax error", cursor.Pos()});
+            return parser::err::SyntaxError(cursor.Pos());
         }
         std::string_view word = *peeked_word;
         std::expected<Output, parser::ParseError> result =
-            std::unexpected(parser::ParseError{"ERR syntax error", cursor.Pos()});
+            parser::err::SyntaxError(cursor.Pos());
         MatchFirst<Members...>([&]<size_t I, class Member>() -> bool {
             if (!Member::MatchesKeyword(word)) {
                 return false;

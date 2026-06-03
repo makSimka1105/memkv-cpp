@@ -5,6 +5,7 @@
 #include <expected>
 #include <span>
 #include <string>
+#include <string_view>
 #include <utility>
 #include <variant>
 #include <vector>
@@ -32,6 +33,21 @@ std::expected<std::string, ParseError> TokenToString(const Token& tok, size_t id
             },
             [idx](const TkSkip&) -> std::expected<std::string, ParseError> {
                 return err::Message("unexpected skip token", idx);
+            },
+        },
+        tok);
+}
+
+std::expected<std::string_view, ParseError> TokenToStringView(const Token& tok, size_t idx) {
+    return std::visit(
+        Overload{
+            [](const TkWord& w) -> std::expected<std::string_view, ParseError> { return w.text; },
+            [](const TkStr& s) -> std::expected<std::string_view, ParseError> { return s.value; },
+            [idx](const TkEof&) -> std::expected<std::string_view, ParseError> {
+                return err::UnexpectedEof(idx);
+            },
+            [idx](const auto&) -> std::expected<std::string_view, ParseError> {
+                return err::Message("unexpected token", idx);
             },
         },
         tok);

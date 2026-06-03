@@ -28,7 +28,7 @@ struct Schema {
         if (args.size() < MinArgc() || args.size() > MaxArgc()) {
             return parser::err::WrongArgs(cmd_name);
         }
-        parser::Cursor cursor{args, 0};
+        parser::Cursor cursor{args};
         VK_ASSIGN_OR_RETURN(auto node, Body::Parse(cursor));
         if (!cursor.Done()) {
             return parser::err::SyntaxError(cursor.Pos());

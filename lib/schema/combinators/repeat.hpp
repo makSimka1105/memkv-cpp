@@ -24,9 +24,9 @@ struct Repeat {
         std::vector<Elem> out;
         while (!cursor.Done()) {
             Elem e{};
-            size_t before = cursor.pos;
+            size_t before = cursor.Pos();
             VK_RETURN_IF_ERROR(ApplyFields<Fields...>(cursor, e));
-            if (cursor.pos == before) {
+            if (cursor.Pos() == before) {
                 break;
             }
             out.push_back(std::move(e));
