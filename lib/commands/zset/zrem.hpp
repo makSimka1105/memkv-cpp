@@ -26,13 +26,9 @@ io::Reply ExecZRem(engine::Engine& e, const ZRem& x) {
     int64_t removed = 0;
     auto st = e.Mutate<types::ZSet>(x.key, [&](auto& z) {
         for (const auto& m : x.members) {
-            auto it = z.scores.find(m);
-            if (it == z.scores.end()) {
-                continue;
+            if (z.RemoveMember(m)) {
+                ++removed;
             }
-            z.sl->Erase(it->second, m);
-            z.scores.erase(it);
-            ++removed;
         }
     });
     if (st == engine::Engine::TypeStatus::kMissing) {

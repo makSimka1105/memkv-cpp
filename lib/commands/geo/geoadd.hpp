@@ -40,15 +40,9 @@ io::Reply ExecGeoAdd(engine::Engine& e, const GeoAdd& x) {
     auto status = e.Upsert<types::ZSet>(x.key, [&](auto& z) {
         for (const auto& entry : x.entries) {
             double score = structures::geohash::Encode(entry.lon, entry.lat);
-            auto it = z.scores.find(entry.member);
-            if (it != z.scores.end()) {
-                z.sl->Erase(it->second, entry.member);
-                it->second = score;
-            } else {
-                z.scores[entry.member] = score;
+            if (z.SetScore(entry.member, score)) {
                 ++added;
             }
-            z.sl->Insert(score, entry.member);
         }
     });
     if (status == engine::Engine::UpsertStatus::kWrongType) {

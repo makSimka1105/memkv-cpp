@@ -28,10 +28,9 @@ io::Reply ExecZPopMax(engine::Engine& e, const ZPopMax& x) {
     size_t n = x.count.value_or(1);
     std::vector<io::Reply> items;
     auto st = e.Mutate<types::ZSet>(x.key, [&](auto& z) {
-        auto popped = z.sl->PopMax(n);
+        auto popped = z.PopMax(n);
         items.reserve(popped.size() * 2);
         for (const auto& [score, member] : popped) {
-            z.scores.erase(member);
             items.push_back(io::MakeBulk(member));
             items.push_back(io::MakeBulk(std::format("{:.17g}", score)));
         }

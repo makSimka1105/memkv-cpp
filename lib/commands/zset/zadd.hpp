@@ -37,15 +37,9 @@ io::Reply ExecZAdd(engine::Engine& e, const ZAdd& x) {
     int64_t added = 0;
     auto status = e.Upsert<types::ZSet>(x.key, [&](auto& z) {
         for (const auto& entry : x.entries) {
-            auto it = z.scores.find(entry.member);
-            if (it != z.scores.end()) {
-                z.sl->Erase(it->second, entry.member);
-                it->second = entry.score;
-            } else {
-                z.scores[entry.member] = entry.score;
+            if (z.SetScore(entry.member, entry.score)) {
                 ++added;
             }
-            z.sl->Insert(entry.score, entry.member);
         }
     });
     if (status == engine::Engine::UpsertStatus::kWrongType) {

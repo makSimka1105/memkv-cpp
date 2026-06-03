@@ -26,15 +26,8 @@ io::Reply ExecZIncrBy(engine::Engine& e, const ZIncrBy& x) {
     double new_score = 0.0;
     auto status = e.Upsert<types::ZSet>(x.key, [&](auto& z) {
         auto it = z.scores.find(x.member);
-        if (it != z.scores.end()) {
-            z.sl->Erase(it->second, x.member);
-            it->second += x.increment;
-            new_score = it->second;
-        } else {
-            z.scores[x.member] = x.increment;
-            new_score = x.increment;
-        }
-        z.sl->Insert(new_score, x.member);
+        new_score = (it != z.scores.end() ? it->second : 0.0) + x.increment;
+        z.SetScore(x.member, new_score);
     });
     if (status == engine::Engine::UpsertStatus::kWrongType) {
         return engine::WrongTypeReply();
