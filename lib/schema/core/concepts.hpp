@@ -5,7 +5,7 @@
 #include <string_view>
 
 #include "parser/cursor.hpp"
-#include "parser/errors.hpp"
+#include "diagnostic.hpp"
 
 namespace valkey::schema {
 
@@ -14,7 +14,7 @@ concept Parser = requires(parser::Cursor cursor) {
     typename Type::Output;
     {
         Type::Parse(cursor)
-    } -> std::same_as<std::expected<typename Type::Output, parser::ParseError>>;
+    } -> std::same_as<parser::CmdResult<typename Type::Output>>;
     { Type::kMinArgc } -> std::convertible_to<size_t>;
     { Type::kMaxArgc } -> std::convertible_to<size_t>;
 };
@@ -27,7 +27,7 @@ concept LabeledParser = Parser<Type> && requires(std::string_view keyword) {
 
 template <class Type, class Node>
 concept FieldFor = requires(parser::Cursor cursor, Node& node) {
-    { Type::Apply(cursor, node) } -> std::same_as<std::expected<void, parser::ParseError>>;
+    { Type::Apply(cursor, node) } -> std::same_as<parser::CmdResult<void>>;
     { Type::kMinArgc } -> std::convertible_to<size_t>;
     { Type::kMaxArgc } -> std::convertible_to<size_t>;
 };

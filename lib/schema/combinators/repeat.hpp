@@ -6,7 +6,7 @@
 #include <vector>
 
 #include "parser/cursor.hpp"
-#include "parser/errors.hpp"
+#include "diagnostic.hpp"
 #include "meta/try.hpp"
 #include "schema/combinators/apply_fields.hpp"
 #include "schema/core/argc.hpp"
@@ -20,7 +20,7 @@ struct Repeat {
     static constexpr size_t kMinArgc = SaturatingSum(Fields::kMinArgc...);
     static constexpr size_t kMaxArgc = kUnbounded;
 
-    static std::expected<std::vector<Elem>, parser::ParseError> Parse(parser::Cursor& cursor) {
+    static parser::CmdResult<std::vector<Elem>> Parse(parser::Cursor& cursor) {
         std::vector<Elem> out;
         while (!cursor.Done()) {
             Elem e{};

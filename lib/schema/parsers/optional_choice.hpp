@@ -7,7 +7,7 @@
 
 #include "meta/fixed_string.hpp"
 #include "parser/cursor.hpp"
-#include "parser/errors.hpp"
+#include "diagnostic.hpp"
 #include "parser/token_convert.hpp"
 
 namespace valkey::schema {
@@ -18,7 +18,7 @@ struct OptionalChoice {
     static constexpr size_t kMinArgc = 0;
     static constexpr size_t kMaxArgc = 1;
 
-    static std::expected<std::optional<bool>, parser::ParseError> Parse(parser::Cursor& cursor) {
+    static parser::CmdResult<std::optional<bool>> Parse(parser::Cursor& cursor) {
         if (cursor.MatchKeyword(A)) {
             return true;
         }

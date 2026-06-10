@@ -8,6 +8,7 @@
 #include <variant>
 #include <vector>
 
+#include "diagnostic.hpp"
 #include "lexer/handlers/IHandler.hpp"
 #include "lexer/handlers/chain_builder.hpp"
 #include "lexer/handlers/float_handler.hpp"
@@ -16,6 +17,7 @@
 #include "lexer/handlers/whitespace.hpp"
 #include "lexer/handlers/word_handler.hpp"
 #include "lexer/types.hpp"
+#include "meta/try.hpp"
 
 namespace valkey::parser {
 
@@ -23,17 +25,13 @@ class Lexer {
 public:
     explicit Lexer(std::unique_ptr<IHandler> chain) : chain_(std::move(chain)) {}
 
-    std::expected<std::vector<Token>, LexError> operator()(std::string_view input) const {
+    std::expected<std::vector<Token>, DiagnosticMessage> operator()(std::string_view input) const {
         std::vector<Token> tokens;
         size_t pos = 0;
         while (pos < input.size()) {
-            auto outcome = chain_->Handle(input, pos);
-            if (!outcome.has_value()) {
-                return std::unexpected(outcome.error());
-            }
-            auto& match_opt = *outcome;
+            VK_ASSIGN_OR_RETURN(auto match_opt, chain_->Handle(input, pos));
             if (!match_opt.has_value()) {
-                return std::unexpected(LexError{"no handler matched", pos});
+                return std::unexpected(DiagnosticMessage{"no handler matched"});
             }
             auto& [token, new_pos] = *match_opt;
             if (!std::holds_alternative<TkSkip>(token)) {
@@ -60,8 +58,8 @@ const Lexer& DefaultLexer() {
     return kLexer;
 }
 
-std::expected<std::vector<Token>, LexError> Tokenize(std::string_view input,
-                                                     const Lexer& lexer = DefaultLexer()) {
+std::expected<std::vector<Token>, DiagnosticMessage> Tokenize(std::string_view input,
+                                                              const Lexer& lexer = DefaultLexer()) {
     return lexer(input);
 }
 

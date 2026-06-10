@@ -1,6 +1,5 @@
 #pragma once
 
-#include <optional>
 #include <utility>
 #include <vector>
 
@@ -8,6 +7,7 @@
 #include "script/ast.hpp"
 #include "script/box.hpp"
 #include "script/error.hpp"
+#include "script/parser/core/dispatch.hpp"
 #include "script/parser/core/optables.hpp"
 #include "script/parser/core/result.hpp"
 #include "script/parser/cursor.hpp"
@@ -21,8 +21,7 @@ public:
     explicit ExprParser(TokenCursor& cursor) : cursor_(cursor) {}
 
     ParseResult<Expr> ParsePrimary() {
-        std::optional<ParseResult<Expr>> hit;
-        ((hit = Try<Ts>()) || ...);
+        auto hit = ParseletSet<Ts...>::template TryParse<Expr>(cursor_, *this);
         if (hit) {
             return std::move(*hit);
         }
@@ -67,14 +66,6 @@ public:
     }
 
 private:
-    template <typename T>
-    std::optional<ParseResult<Expr>> Try() {
-        if (!T::Matches(cursor_.Peek())) {
-            return std::nullopt;
-        }
-        return T::Parse(cursor_, *this);
-    }
-
     TokenCursor& cursor_;
 };
 

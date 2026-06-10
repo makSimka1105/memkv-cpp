@@ -4,6 +4,7 @@
 #include <expected>
 #include <vector>
 
+#include "meta/try.hpp"
 #include "script/error.hpp"
 #include "script/token.hpp"
 #include "script/lexer/rule_set.hpp"
@@ -29,9 +30,8 @@ std::expected<std::vector<SpannedToken>, ScriptError> Lex(std::string_view src) 
         if (c.AtEnd()) break;
 
         auto start = static_cast<uint32_t>(c.pos);
-        auto r = LexChain::Try(c);
-        if (!r) return std::unexpected(r.error());
-        tokens.push_back(SpannedToken{std::move(*r), Span{start, static_cast<uint32_t>(c.pos)}});
+        VK_ASSIGN_OR_RETURN(auto&& tok, LexChain::Try(c));
+        tokens.push_back(SpannedToken{std::move(tok), Span{start, static_cast<uint32_t>(c.pos)}});
     }
 
     auto eof_pos = static_cast<uint32_t>(c.pos);

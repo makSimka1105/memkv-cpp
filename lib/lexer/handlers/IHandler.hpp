@@ -8,11 +8,12 @@
 #include <string_view>
 #include <utility>
 
+#include "diagnostic.hpp"
 #include "lexer/types.hpp"
 
 namespace valkey::parser {
 
-using HandleResult = std::expected<std::optional<LexMatch>, LexError>;
+using HandleResult = std::expected<std::optional<LexMatch>, DiagnosticMessage>;
 
 class IHandler {
 public:

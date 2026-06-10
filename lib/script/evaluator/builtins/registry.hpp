@@ -4,6 +4,7 @@
 #include <span>
 #include <string_view>
 
+#include "meta/match_first.hpp"
 #include "script/evaluator/builtins/call.hpp"
 #include "script/evaluator/builtins/len.hpp"
 #include "script/evaluator/builtins/type.hpp"
@@ -24,7 +25,13 @@ template <BuiltinLike... Ts>
 struct BuiltinRegistry {
     static Builtin Find(std::string_view name) {
         Builtin fn = nullptr;
-        (void)((Ts::kName == name && (fn = &Ts::Apply, true)) || ...);
+        MatchFirst<Ts...>([&]<size_t, typename T>() {
+            if (T::kName != name) {
+                return false;
+            }
+            fn = &T::Apply;
+            return true;
+        });
         return fn;
     }
 };

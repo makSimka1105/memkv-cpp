@@ -5,7 +5,7 @@
 #include <string_view>
 
 #include "parser/cursor.hpp"
-#include "parser/errors.hpp"
+#include "diagnostic.hpp"
 #include "schema/core/concepts.hpp"
 
 namespace valkey::schema {
@@ -18,7 +18,7 @@ struct Required {
 
     template <class Node>
         requires LabeledField<Field, Node>
-    static std::expected<void, parser::ParseError> Apply(parser::Cursor& cursor, Node& node) {
+    static parser::CmdResult<void> Apply(parser::Cursor& cursor, Node& node) {
         return Field::Apply(cursor, node);
     }
 

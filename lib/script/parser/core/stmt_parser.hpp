@@ -1,6 +1,5 @@
 #pragma once
 
-#include <optional>
 #include <string>
 #include <utility>
 #include <vector>
@@ -8,6 +7,7 @@
 #include "meta/try.hpp"
 #include "script/ast.hpp"
 #include "script/error.hpp"
+#include "script/parser/core/dispatch.hpp"
 #include "script/parser/core/result.hpp"
 #include "script/parser/cursor.hpp"
 #include "script/token.hpp"
@@ -25,8 +25,7 @@ public:
     }
 
     ParseResult<Stmt> ParseStmt() {
-        std::optional<ParseResult<Stmt>> hit;
-        ((hit = Try<Ts>()) || ...);
+        auto hit = ParseletSet<Ts...>::template TryParse<Stmt>(cursor_, *this);
         if (hit) {
             return std::move(*hit);
         }
@@ -45,14 +44,6 @@ public:
     }
 
 private:
-    template <typename T>
-    std::optional<ParseResult<Stmt>> Try() {
-        if (!T::Matches(cursor_.Peek())) {
-            return std::nullopt;
-        }
-        return T::Parse(cursor_, *this);
-    }
-
     ParseResult<Stmt> ParseExprOrAssign() {
         VK_ASSIGN_OR_RETURN(auto expr, ParseExpr());
         if (cursor_.IsOp(TkOp::kAssign)) {

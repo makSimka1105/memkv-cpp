@@ -6,6 +6,8 @@ target_sources(valkey_core
     INTERFACE
     FILE_SET HEADERS
     BASE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}
+    FILES
+        ${CMAKE_CURRENT_SOURCE_DIR}/diagnostic.hpp
 )
 
 add_subdirectory(meta)

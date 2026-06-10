@@ -6,7 +6,7 @@
 #include <utility>
 
 #include "parser/cursor.hpp"
-#include "parser/errors.hpp"
+#include "diagnostic.hpp"
 #include "schema/parsers/scan.hpp"
 
 namespace valkey::schema {
@@ -17,7 +17,7 @@ struct Optional {
     static constexpr size_t kMinArgc = 0;
     static constexpr size_t kMaxArgc = 1;
 
-    static std::expected<Type, parser::ParseError> Parse(parser::Cursor& cursor) {
+    static parser::CmdResult<Type> Parse(parser::Cursor& cursor) {
         if (cursor.Done()) {
             return Type{};
         }
@@ -37,7 +37,7 @@ struct Optional<std::optional<Type>> {
     static constexpr size_t kMinArgc = 0;
     static constexpr size_t kMaxArgc = 1;
 
-    static std::expected<std::optional<Type>, parser::ParseError> Parse(parser::Cursor& cursor) {
+    static parser::CmdResult<std::optional<Type>> Parse(parser::Cursor& cursor) {
         if (cursor.Done()) {
             return std::nullopt;
         }

@@ -1,6 +1,5 @@
 #pragma once
 
-#include <cstddef>
 #include <expected>
 #include <string>
 #include <string_view>
@@ -10,23 +9,25 @@
 
 namespace valkey::parser {
 
-struct ParseError {
+struct DiagnosticMessage {
     std::string message;
-    size_t token_index = 0;
 };
+
+template <typename T>
+using CmdResult = std::expected<T, DiagnosticMessage>;
 
 namespace err {
 
-auto Message(std::string msg, size_t pos = 0) {
-    return std::unexpected(ParseError{std::move(msg), pos});
+auto Message(std::string msg) {
+    return std::unexpected(DiagnosticMessage{std::move(msg)});
 }
 
 auto EmptyInput() {
     return Message("ERR empty input");
 }
 
-auto SyntaxError(size_t pos = 0) {
-    return Message("ERR syntax error", pos);
+auto SyntaxError() {
+    return Message("ERR syntax error");
 }
 
 auto WrongArgs(std::string_view name) {
@@ -41,16 +42,16 @@ auto UnknownSubcommand(std::string_view word) {
     return Message("ERR unknown subcommand '" + std::string(word) + "'");
 }
 
-auto NotInteger(size_t pos) {
-    return Message("ERR value is not an integer or out of range", pos);
+auto NotInteger() {
+    return Message("ERR value is not an integer or out of range");
 }
 
-auto NotFloat(size_t pos) {
-    return Message("ERR value is not a valid float", pos);
+auto NotFloat() {
+    return Message("ERR value is not a valid float");
 }
 
-auto UnexpectedEof(size_t pos) {
-    return Message("unexpected EOF", pos);
+auto UnexpectedEof() {
+    return Message("unexpected EOF");
 }
 
 }  // namespace err

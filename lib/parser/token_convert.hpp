@@ -12,73 +12,73 @@
 
 #include "lexer/types.hpp"
 #include "meta/overload.hpp"
-#include "parser/errors.hpp"
+#include "diagnostic.hpp"
 #include "meta/try.hpp"
 
 namespace valkey::parser {
 
-std::expected<std::string, ParseError> TokenToString(const Token& tok, size_t idx) {
+CmdResult<std::string> TokenToString(const Token& tok, size_t) {
     return std::visit(
         Overload{
-            [](const TkWord& w) -> std::expected<std::string, ParseError> { return w.text; },
-            [](const TkInt& i) -> std::expected<std::string, ParseError> {
+            [](const TkWord& w) -> CmdResult<std::string> { return w.text; },
+            [](const TkInt& i) -> CmdResult<std::string> {
                 return std::to_string(i.value);
             },
-            [](const TkFloat& f) -> std::expected<std::string, ParseError> {
+            [](const TkFloat& f) -> CmdResult<std::string> {
                 return std::to_string(f.value);
             },
-            [](const TkStr& s) -> std::expected<std::string, ParseError> { return s.value; },
-            [idx](const TkEof&) -> std::expected<std::string, ParseError> {
-                return err::UnexpectedEof(idx);
+            [](const TkStr& s) -> CmdResult<std::string> { return s.value; },
+            [](const TkEof&) -> CmdResult<std::string> {
+                return err::UnexpectedEof();
             },
-            [idx](const TkSkip&) -> std::expected<std::string, ParseError> {
-                return err::Message("unexpected skip token", idx);
-            },
-        },
-        tok);
-}
-
-std::expected<std::string_view, ParseError> TokenToStringView(const Token& tok, size_t idx) {
-    return std::visit(
-        Overload{
-            [](const TkWord& w) -> std::expected<std::string_view, ParseError> { return w.text; },
-            [](const TkStr& s) -> std::expected<std::string_view, ParseError> { return s.value; },
-            [idx](const TkEof&) -> std::expected<std::string_view, ParseError> {
-                return err::UnexpectedEof(idx);
-            },
-            [idx](const auto&) -> std::expected<std::string_view, ParseError> {
-                return err::Message("unexpected token", idx);
+            [](const TkSkip&) -> CmdResult<std::string> {
+                return err::Message("unexpected skip token");
             },
         },
         tok);
 }
 
-std::expected<int64_t, ParseError> TokenToInt(const Token& tok, size_t idx) {
+CmdResult<std::string_view> TokenToStringView(const Token& tok, size_t) {
     return std::visit(
         Overload{
-            [](const TkInt& i) -> std::expected<int64_t, ParseError> { return i.value; },
-            [idx](const auto&) -> std::expected<int64_t, ParseError> {
-                return err::NotInteger(idx);
+            [](const TkWord& w) -> CmdResult<std::string_view> { return w.text; },
+            [](const TkStr& s) -> CmdResult<std::string_view> { return s.value; },
+            [](const TkEof&) -> CmdResult<std::string_view> {
+                return err::UnexpectedEof();
+            },
+            [](const auto&) -> CmdResult<std::string_view> {
+                return err::Message("unexpected token");
             },
         },
         tok);
 }
 
-std::expected<double, ParseError> TokenToFloat(const Token& tok, size_t idx) {
+CmdResult<int64_t> TokenToInt(const Token& tok, size_t) {
     return std::visit(
         Overload{
-            [](const TkFloat& f) -> std::expected<double, ParseError> { return f.value; },
-            [](const TkInt& i) -> std::expected<double, ParseError> {
+            [](const TkInt& i) -> CmdResult<int64_t> { return i.value; },
+            [](const auto&) -> CmdResult<int64_t> {
+                return err::NotInteger();
+            },
+        },
+        tok);
+}
+
+CmdResult<double> TokenToFloat(const Token& tok, size_t) {
+    return std::visit(
+        Overload{
+            [](const TkFloat& f) -> CmdResult<double> { return f.value; },
+            [](const TkInt& i) -> CmdResult<double> {
                 return static_cast<double>(i.value);
             },
-            [idx](const auto&) -> std::expected<double, ParseError> {
-                return err::NotFloat(idx);
+            [](const auto&) -> CmdResult<double> {
+                return err::NotFloat();
             },
         },
         tok);
 }
 
-std::expected<std::vector<std::string>, ParseError> CollectStrings(
+CmdResult<std::vector<std::string>> CollectStrings(
     std::span<const Token> args, size_t base_index) {
     std::vector<std::string> out;
     out.reserve(args.size());

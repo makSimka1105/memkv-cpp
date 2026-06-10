@@ -9,7 +9,7 @@
 #include <type_traits>
 
 #include "lexer/types.hpp"
-#include "parser/errors.hpp"
+#include "diagnostic.hpp"
 #include "parser/token_convert.hpp"
 #include "util/str.hpp"
 
@@ -25,13 +25,13 @@ public:
     size_t Remaining() const { return tokens_.size() > pos_ ? tokens_.size() - pos_ : 0; }
     void Restore(size_t pos) { pos_ = pos; }
 
-    std::expected<std::string, ParseError> NextString() { return Next<std::string>(); }
-    std::expected<int64_t, ParseError> NextInt() { return Next<int64_t>(); }
-    std::expected<double, ParseError> NextFloat() { return Next<double>(); }
+    CmdResult<std::string> NextString() { return Next<std::string>(); }
+    CmdResult<int64_t> NextInt() { return Next<int64_t>(); }
+    CmdResult<double> NextFloat() { return Next<double>(); }
 
-    std::expected<std::string_view, ParseError> PeekStringView() const {
+    CmdResult<std::string_view> PeekStringView() const {
         if (Done()) {
-            return err::Message("unexpected end of input", pos_);
+            return err::Message("unexpected end of input");
         }
         return TokenToStringView(tokens_[pos_], pos_);
     }
@@ -50,9 +50,9 @@ public:
 
 private:
     template <class T>
-    std::expected<T, ParseError> Next() {
+    CmdResult<T> Next() {
         if (Done()) {
-            return err::Message("unexpected end of input", pos_);
+            return err::Message("unexpected end of input");
         }
         auto r = Convert<T>(tokens_[pos_], pos_);
         if (r) {
@@ -62,7 +62,7 @@ private:
     }
 
     template <class T>
-    static std::expected<T, ParseError> Convert(const Token& tok, size_t idx) {
+    static CmdResult<T> Convert(const Token& tok, size_t idx) {
         if constexpr (std::is_same_v<T, std::string>) {
             return TokenToString(tok, idx);
         } else if constexpr (std::is_same_v<T, int64_t>) {

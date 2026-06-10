@@ -24,11 +24,6 @@ struct TkStr {
 
 using Token = std::variant<TkSkip, TkEof, TkWord, TkInt, TkFloat, TkStr>;
 
-struct LexError {
-    std::string message;
-    size_t offset = 0;
-};
-
 struct LexMatch {
     Token token;
     size_t new_pos;

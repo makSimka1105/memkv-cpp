@@ -52,11 +52,8 @@ ValueResult FromReply(const io::Reply& reply) {
                 List list;
                 list.items.reserve(array->items.size());
                 for (const auto& item : array->items) {
-                    auto value = FromReply(item);
-                    if (!value) {
-                        return std::unexpected(value.error());
-                    }
-                    list.items.push_back(std::move(*value));
+                    VK_ASSIGN_OR_RETURN(auto value, FromReply(item));
+                    list.items.push_back(std::move(value));
                 }
                 return ScriptValue{Box<List>{std::move(list)}};
             },

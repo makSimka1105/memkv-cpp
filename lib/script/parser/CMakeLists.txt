@@ -6,6 +6,7 @@ target_sources(valkey_core
         ${CMAKE_CURRENT_SOURCE_DIR}/parser.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/registry.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/core/result.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/core/dispatch.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/core/optables.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/core/expr_parser.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/core/stmt_parser.hpp

@@ -7,6 +7,7 @@
 
 #include "lexer/handlers/IHandler.hpp"
 #include "lexer/handlers/utils.hpp"
+#include "meta/try.hpp"
 
 namespace valkey::parser {
 
@@ -20,18 +21,15 @@ protected:
         size_t j = pos + 1;
         while (j < input.size() && input[j] != '"') {
             if (input[j] == '\\' && j + 1 < input.size()) {
-                auto ch = detail::ProcessEscape(input, j + 1);
-                if (!ch.has_value()) {
-                    return std::unexpected(ch.error());
-                }
-                s.push_back(*ch);
+                VK_ASSIGN_OR_RETURN(char ch, detail::ProcessEscape(input, j + 1));
+                s.push_back(ch);
                 j += 2;
             } else {
                 s.push_back(input[j++]);
             }
         }
         if (j >= input.size()) {
-            return std::unexpected(LexError{"unterminated string", pos});
+            return std::unexpected(DiagnosticMessage{"unterminated string"});
         }
         return LexMatch{Token{TkStr{std::move(s)}}, j + 1};
     }

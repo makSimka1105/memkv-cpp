@@ -6,12 +6,12 @@
 #include <utility>
 
 #include "parser/cursor.hpp"
-#include "parser/errors.hpp"
+#include "diagnostic.hpp"
 #include "meta/try.hpp"
 #include "schema/combinators/required.hpp"
 #include "schema/core/argc.hpp"
 #include "schema/core/concepts.hpp"
-#include "schema/core/match_first.hpp"
+#include "meta/match_first.hpp"
 
 namespace valkey::schema {
 
@@ -23,9 +23,9 @@ struct AnyOrder {
 
     template <class Node>
         requires(LabeledField<Fields, Node> && ...)
-    static std::expected<void, parser::ParseError> Apply(parser::Cursor& cursor, Node& node) {
+    static parser::CmdResult<void> Apply(parser::Cursor& cursor, Node& node) {
         bool used[sizeof...(Fields)] = {};
-        std::expected<void, parser::ParseError> applied{};
+        parser::CmdResult<void> applied{};
         while (!cursor.Done()) {
             auto peeked_word = cursor.PeekStringView();
             if (!peeked_word) {
@@ -46,7 +46,7 @@ struct AnyOrder {
             VK_RETURN_IF_ERROR(applied);
         }
 
-        std::expected<void, parser::ParseError> result{};
+        parser::CmdResult<void> result{};
         [&]<size_t... Is>(std::index_sequence<Is...>) {
             auto finalize = [&]<size_t I, class Field>() {
                 if (used[I]) {
@@ -55,7 +55,7 @@ struct AnyOrder {
                 if constexpr (FieldRequired<Field>()) {
                     if (result) {
                         result =
-                            parser::err::SyntaxError(cursor.Pos());
+                            parser::err::SyntaxError();
                     }
                 } else {
                     Field::ApplyDefault(node);

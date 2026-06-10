@@ -4,6 +4,7 @@
 #include <expected>
 #include <string_view>
 
+#include "diagnostic.hpp"
 #include "lexer/types.hpp"
 
 namespace valkey::parser::detail {
@@ -20,7 +21,7 @@ size_t WordEndPos(std::string_view input, size_t pos) {
     return end;
 }
 
-std::expected<char, LexError> ProcessEscape(std::string_view input, size_t pos) {
+std::expected<char, DiagnosticMessage> ProcessEscape(std::string_view input, size_t pos) {
     switch (input[pos]) {
         case 'n':
             return '\n';
@@ -33,7 +34,7 @@ std::expected<char, LexError> ProcessEscape(std::string_view input, size_t pos) 
         case '\\':
             return '\\';
         default:
-            return std::unexpected(LexError{"invalid escape", pos - 1});
+            return std::unexpected(DiagnosticMessage{"invalid escape"});
     }
 }
 

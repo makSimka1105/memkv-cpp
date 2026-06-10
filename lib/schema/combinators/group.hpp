@@ -5,8 +5,9 @@
 #include <string_view>
 
 #include "meta/fixed_string.hpp"
+#include "meta/try.hpp"
 #include "parser/cursor.hpp"
-#include "parser/errors.hpp"
+#include "diagnostic.hpp"
 #include "parser/token_convert.hpp"
 #include "schema/combinators/apply_fields.hpp"
 #include "schema/core/argc.hpp"
@@ -20,15 +21,12 @@ struct Group {
     static constexpr size_t kMinArgc = SaturatingAdd(1, SaturatingSum(Fields::kMinArgc...));
     static constexpr size_t kMaxArgc = SaturatingAdd(1, SaturatingSum(Fields::kMaxArgc...));
 
-    static std::expected<Node, parser::ParseError> Parse(parser::Cursor& cursor) {
+    static parser::CmdResult<Node> Parse(parser::Cursor& cursor) {
         if (!cursor.MatchKeyword(Kw)) {
-            return parser::err::SyntaxError(cursor.Pos());
+            return parser::err::SyntaxError();
         }
         Node node{};
-        auto result = ApplyFields<Fields...>(cursor, node);
-        if (!result) {
-            return std::unexpected(result.error());
-        }
+        VK_RETURN_IF_ERROR(ApplyFields<Fields...>(cursor, node));
         return node;
     }
 

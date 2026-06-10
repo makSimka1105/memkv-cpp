@@ -8,9 +8,9 @@
 #include <variant>
 
 #include "parser/cursor.hpp"
-#include "parser/errors.hpp"
+#include "diagnostic.hpp"
 #include "schema/core/concepts.hpp"
-#include "schema/core/match_first.hpp"
+#include "meta/match_first.hpp"
 
 namespace valkey::schema {
 
@@ -21,14 +21,14 @@ struct OneOf {
     static constexpr size_t kMinArgc = std::min({Members::kMinArgc...});
     static constexpr size_t kMaxArgc = std::max({Members::kMaxArgc...});
 
-    static std::expected<Output, parser::ParseError> Parse(parser::Cursor& cursor) {
+    static parser::CmdResult<Output> Parse(parser::Cursor& cursor) {
         auto peeked_word = cursor.PeekStringView();
         if (!peeked_word) {
-            return parser::err::SyntaxError(cursor.Pos());
+            return parser::err::SyntaxError();
         }
         std::string_view word = *peeked_word;
-        std::expected<Output, parser::ParseError> result =
-            parser::err::SyntaxError(cursor.Pos());
+        parser::CmdResult<Output> result =
+            parser::err::SyntaxError();
         MatchFirst<Members...>([&]<size_t I, class Member>() -> bool {
             if (!Member::MatchesKeyword(word)) {
                 return false;

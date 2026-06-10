@@ -5,7 +5,6 @@ target_sources(valkey_core
         ${CMAKE_CURRENT_SOURCE_DIR}/schema.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/core/argc.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/core/concepts.hpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/core/match_first.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/parsers/scan.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/parsers/arg.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/parsers/optional.hpp

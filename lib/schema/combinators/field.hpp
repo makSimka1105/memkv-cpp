@@ -6,7 +6,7 @@
 #include <utility>
 
 #include "parser/cursor.hpp"
-#include "parser/errors.hpp"
+#include "diagnostic.hpp"
 #include "schema/core/concepts.hpp"
 
 namespace valkey::schema {
@@ -17,7 +17,7 @@ struct Field {
     static constexpr size_t kMaxArgc = InnerParser::kMaxArgc;
 
     template <class Node>
-    static std::expected<void, parser::ParseError> Apply(parser::Cursor& c, Node& node) {
+    static parser::CmdResult<void> Apply(parser::Cursor& c, Node& node) {
         return InnerParser::Parse(c).transform([&](auto&& v) { node.*MemPtr = std::move(v); });
     }
 

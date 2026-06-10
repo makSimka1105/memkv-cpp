@@ -4,7 +4,7 @@
 #include <expected>
 
 #include "parser/cursor.hpp"
-#include "parser/errors.hpp"
+#include "diagnostic.hpp"
 #include "schema/parsers/scan.hpp"
 
 namespace valkey::schema {
@@ -15,7 +15,7 @@ struct Arg {
     static constexpr size_t kMinArgc = 1;
     static constexpr size_t kMaxArgc = 1;
 
-    static std::expected<Type, parser::ParseError> Parse(parser::Cursor& cursor) {
+    static parser::CmdResult<Type> Parse(parser::Cursor& cursor) {
         return ScanValue<Type>(cursor);
     }
 };

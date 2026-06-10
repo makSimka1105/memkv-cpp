@@ -6,7 +6,7 @@
 #include <utility>
 
 #include "parser/cursor.hpp"
-#include "parser/errors.hpp"
+#include "diagnostic.hpp"
 #include "schema/core/concepts.hpp"
 
 namespace valkey::schema {
@@ -17,7 +17,7 @@ struct Opt {
     static constexpr size_t kMinArgc = 0;
     static constexpr size_t kMaxArgc = InnerParser::kMaxArgc;
 
-    static std::expected<Output, parser::ParseError> Parse(parser::Cursor& cursor) {
+    static parser::CmdResult<Output> Parse(parser::Cursor& cursor) {
         if (cursor.Done()) {
             return Output{};
         }
