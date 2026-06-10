@@ -1,0 +1,30 @@
+target_sources(valkey_core
+    INTERFACE
+    FILE_SET HEADERS
+    FILES
+        ${CMAKE_CURRENT_SOURCE_DIR}/evaluator.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/core/env.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/core/context.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/core/convert.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/core/dispatch.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/builtins/registry.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/builtins/call.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/builtins/len.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/builtins/type.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/expr/literals.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/expr/ident.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/expr/bin_op.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/expr/un_op.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/expr/index.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/expr/list_lit.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/expr/call.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/expr/script_call.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/stmt/let.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/stmt/assign.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/stmt/if.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/stmt/while.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/stmt/for.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/stmt/return.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/stmt/expr_stmt.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/stmt/block.hpp
+)

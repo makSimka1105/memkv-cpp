@@ -10,6 +10,7 @@ namespace valkey::engine {
 
 struct Config {
     size_t maxmemory = 0;
+    size_t script_max_iters = 10'000'000;
 };
 
 std::optional<size_t> ParseMemorySize(std::string_view s) {

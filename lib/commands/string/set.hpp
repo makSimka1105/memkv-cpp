@@ -9,6 +9,7 @@
 #include "schema/combinators/field.hpp"
 #include "schema/schema.hpp"
 #include "schema/parsers/arg.hpp"
+#include "types/all.hpp"
 
 namespace valkey::commands {
 
@@ -21,7 +22,7 @@ using SetSchema = schema::Schema<Set, schema::Field<&Set::key, schema::Arg<std::
                                  schema::Field<&Set::value, schema::Arg<std::string>>>;
 
 io::Reply ExecSet(engine::Engine& e, const Set& x) {
-    if (!e.SetString(x.key, x.value)) {
+    if (!e.ForceSet<types::String>(x.key, x.value)) {
         return engine::OomReply();
     }
     return io::Ok();

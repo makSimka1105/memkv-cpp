@@ -1,13 +1,14 @@
 #pragma once
 
 #include <utility>
+#include <variant>
 #include <vector>
 
 #include "commands/transaction/discard.hpp"
 #include "commands/transaction/exec.hpp"
 #include "commands/transaction/multi.hpp"
 #include "engine/engine.hpp"
-#include "engine/interpreter.hpp"
+#include "engine/eval.hpp"
 #include "engine/session.hpp"
 #include "io/reply.hpp"
 #include "meta/overload.hpp"

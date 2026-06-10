@@ -27,6 +27,7 @@ void Write(std::ostream& out, const Reply& r) {
             [&](const SimpleStr& s) { out << s.value << '\n'; },
             [&](const BulkStr& b) { out << '"' << b.value << '"' << '\n'; },
             [&](const Int& i) { out << "(int) " << i.value << '\n'; },
+            [&](const Bool& b) { out << (b.value ? "(true)" : "(false)") << '\n'; },
             [&](const Err& e) { out << "(error) " << e.message << '\n'; },
             [&](const Nil&) { out << "(nil)\n"; },
             [&](const std::unique_ptr<Array>& a) {

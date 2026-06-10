@@ -7,7 +7,9 @@ target_sources(valkey_core
         ${CMAKE_CURRENT_SOURCE_DIR}/memory_tracker.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/replies.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/eval.hpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/interpreter.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/dispatcher.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/session.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/session_eval.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/store.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/script_registry.hpp
 )

@@ -54,6 +54,9 @@
 #include "geo/geodist.hpp"
 #include "geo/geosearch.hpp"
 #include "geo/geosearchstore.hpp"
+#include "script/eval.hpp"
+#include "script/func.hpp"
+#include "script/funccall.hpp"
 #include "commands/tree.hpp"
 
 namespace valkey::commands {
@@ -116,7 +119,10 @@ using RootGroup = CommandGroup<"",
     LeafCommand<GeoPosTrait>,
     LeafCommand<GeoDistTrait>,
     LeafCommand<GeoSearchTrait>,
-    LeafCommand<GeoSearchStoreTrait>
+    LeafCommand<GeoSearchStoreTrait>,
+    LeafCommand<EvalTrait>,
+    LeafCommand<FuncTrait>,
+    LeafCommand<FuncCallTrait>
 >;
 
 }  // namespace valkey::commands

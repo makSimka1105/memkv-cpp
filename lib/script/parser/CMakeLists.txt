@@ -1,0 +1,23 @@
+target_sources(valkey_core
+    INTERFACE
+    FILE_SET HEADERS
+    FILES
+        ${CMAKE_CURRENT_SOURCE_DIR}/cursor.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/parser.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/registry.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/core/result.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/core/optables.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/core/expr_parser.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/core/stmt_parser.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/expr/literals.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/expr/prefix_unary.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/expr/ident_call.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/expr/grouping.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/expr/list_lit.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/expr/kw_expr.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/stmt/let.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/stmt/if.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/stmt/while.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/stmt/for.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/stmt/return.hpp
+)

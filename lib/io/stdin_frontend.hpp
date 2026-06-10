@@ -4,6 +4,7 @@
 #include <string>
 
 #include "engine/engine.hpp"
+#include "engine/eval.hpp"
 #include "engine/session.hpp"
 #include "engine/session_eval.hpp"
 #include "io/human.hpp"
@@ -14,6 +15,7 @@
 namespace valkey::io {
 
 void RunStdinRepl(engine::Engine& eng, std::istream& in, std::ostream& out) {
+    engine::SetupEngine(eng);
     engine::Session session;
     std::string line;
     while (std::getline(in, line)) {

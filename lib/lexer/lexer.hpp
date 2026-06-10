@@ -8,14 +8,14 @@
 #include <variant>
 #include <vector>
 
+#include "lexer/handlers/IHandler.hpp"
 #include "lexer/handlers/chain_builder.hpp"
 #include "lexer/handlers/float_handler.hpp"
-#include "lexer/handlers/IHandler.hpp"
 #include "lexer/handlers/int_handler.hpp"
 #include "lexer/handlers/quoted_string.hpp"
-#include "lexer/types.hpp"
 #include "lexer/handlers/whitespace.hpp"
 #include "lexer/handlers/word_handler.hpp"
+#include "lexer/types.hpp"
 
 namespace valkey::parser {
 
@@ -49,14 +49,20 @@ private:
     std::unique_ptr<IHandler> chain_;
 };
 
-std::expected<std::vector<Token>, LexError> Tokenize(std::string_view input) {
-    return Lexer{ChainBuilder{}
-                     .Add<WhitespaceHandler>()
-                     .Add<QuotedStringHandler>()
-                     .Add<IntHandler>()
-                     .Add<FloatHandler>()
-                     .Add<WordHandler>()
-                     .Build()}(input);
+const Lexer& DefaultLexer() {
+    static const Lexer kLexer{ChainBuilder{}
+                                  .Add<WhitespaceHandler>()
+                                  .Add<QuotedStringHandler>()
+                                  .Add<IntHandler>()
+                                  .Add<FloatHandler>()
+                                  .Add<WordHandler>()
+                                  .Build()};
+    return kLexer;
+}
+
+std::expected<std::vector<Token>, LexError> Tokenize(std::string_view input,
+                                                     const Lexer& lexer = DefaultLexer()) {
+    return lexer(input);
 }
 
 }  // namespace valkey::parser
