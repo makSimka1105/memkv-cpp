@@ -1,4 +1,5 @@
 #pragma once
+#include <cstddef>
 #include <cstdint>
 #include <string>
 #include <vector>
@@ -24,12 +25,15 @@ using SRemSchema = schema::Schema<SRem,
 
 io::Reply ExecSRem(engine::Engine& e, const SRem& x) {
     int64_t removed = 0;
-    auto st = e.Mutate<types::Set>(x.key, [&](auto& s) {
+    auto st = e.Mutate<types::Set>(x.key, [&](auto& s) -> std::ptrdiff_t {
+        std::ptrdiff_t delta = 0;
         for (const auto& m : x.members) {
             if (s.erase(m)) {
                 ++removed;
+                delta -= types::SetTrait::ElementBytes(m);
             }
         }
+        return delta;
     });
     if (st == engine::Engine::TypeStatus::kMissing) {
         return io::MakeInt(0);

@@ -1,4 +1,5 @@
 #pragma once
+#include <cstddef>
 #include <cstdint>
 #include <string>
 #include <vector>
@@ -24,12 +25,15 @@ using ZRemSchema = schema::Schema<ZRem,
 
 io::Reply ExecZRem(engine::Engine& e, const ZRem& x) {
     int64_t removed = 0;
-    auto st = e.Mutate<types::ZSet>(x.key, [&](auto& z) {
+    auto st = e.Mutate<types::ZSet>(x.key, [&](auto& z) -> std::ptrdiff_t {
+        std::ptrdiff_t delta = 0;
         for (const auto& m : x.members) {
             if (z.RemoveMember(m)) {
                 ++removed;
+                delta -= types::ZSetTrait::ElementBytes(m);
             }
         }
+        return delta;
     });
     if (st == engine::Engine::TypeStatus::kMissing) {
         return io::MakeInt(0);

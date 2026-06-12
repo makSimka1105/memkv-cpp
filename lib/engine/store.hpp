@@ -5,6 +5,7 @@
 #include <cstdint>
 #include <string>
 #include <string_view>
+#include <type_traits>
 #include <utility>
 #include <vector>
 
@@ -48,16 +49,16 @@ public:
         }
         mem_.Sub(old_bytes);
         mem_.Add(new_bytes);
-        storage_.Set(std::move(key), std::move(value));
+        storage_.Set(std::move(key), std::move(value)).bytes = new_bytes;
         return true;
     }
 
     bool Del(std::string_view key) {
-        const auto* var = storage_.Get(key);
-        if (var == nullptr) {
+        const auto* entry = storage_.Get(key);
+        if (entry == nullptr) {
             return false;
         }
-        mem_.Sub(std::visit([&](const auto& val) { return ValBytes(key, val); }, *var));
+        mem_.Sub(entry->bytes);
         return storage_.Del(key);
     }
 
@@ -79,8 +80,8 @@ public:
     }
 
     std::string_view TypeOf(std::string_view key) {
-        const auto* var = storage_.Get(key);
-        if (var == nullptr) {
+        const auto* entry = storage_.Get(key);
+        if (entry == nullptr) {
             return "none";
         }
         return std::visit(
@@ -88,7 +89,7 @@ public:
                 using T = std::decay_t<decltype(val)>;
                 return TraitForT<T, types::AllStoredTypes>::kName;
             },
-            *var);
+            entry->value);
     }
 
     std::vector<std::string> Keys(std::string_view pattern) {
@@ -99,11 +100,11 @@ public:
 
     template <typename T>
     std::pair<const T*, TypeStatus> As(std::string_view key) {
-        const auto* var = storage_.Get(key);
-        if (var == nullptr) {
+        const auto* entry = storage_.Get(key);
+        if (entry == nullptr) {
             return {nullptr, TypeStatus::kMissing};
         }
-        const auto* t = std::get_if<T>(var);
+        const auto* t = std::get_if<T>(&entry->value);
         if (t == nullptr) {
             return {nullptr, TypeStatus::kWrongType};
         }
@@ -112,37 +113,34 @@ public:
 
     template <typename T, typename Fn>
     TypeStatus Mutate(std::string_view key, Fn&& fn) {
-        auto* var = storage_.GetMutable(key);
-        if (var == nullptr) {
+        auto* entry = storage_.GetMutable(key);
+        if (entry == nullptr) {
             return TypeStatus::kMissing;
         }
-        auto* t = std::get_if<T>(var);
+        auto* t = std::get_if<T>(&entry->value);
         if (t == nullptr) {
             return TypeStatus::kWrongType;
         }
-        const size_t old_bytes = ValBytes(key, *t);
-        std::forward<Fn>(fn)(*t);
-        mem_.Sub(old_bytes);
+        ApplyFn(key, *entry, *t, std::forward<Fn>(fn));
         if (IsEmpty(*t)) {
+            mem_.Sub(entry->bytes);
             storage_.Del(key);
-        } else {
-            mem_.Add(ValBytes(key, *t));
         }
         return TypeStatus::kOk;
     }
 
     template <typename T, typename Fn>
     UpsertStatus Upsert(std::string key, Fn&& fn) {
-        auto* var = storage_.GetMutable(key);
-        if (var != nullptr) {
-            auto* t = std::get_if<T>(var);
+        auto* entry = storage_.GetMutable(key);
+        if (entry != nullptr) {
+            auto* t = std::get_if<T>(&entry->value);
             if (t == nullptr) {
                 return UpsertStatus::kWrongType;
             }
-            const size_t old_bytes = ValBytes(key, *t);
-            std::forward<Fn>(fn)(*t);
-            mem_.Sub(old_bytes);
-            mem_.Add(ValBytes(key, *t));
+            if (mem_.Limit() != 0 && mem_.Used() > mem_.Limit()) {
+                return UpsertStatus::kOom;
+            }
+            ApplyFn(key, *entry, *t, std::forward<Fn>(fn));
             return UpsertStatus::kOk;
         }
         T fresh{};
@@ -152,7 +150,7 @@ public:
             return UpsertStatus::kOom;
         }
         mem_.Add(need);
-        storage_.Set(std::move(key), std::move(fresh));
+        storage_.Set(std::move(key), std::move(fresh)).bytes = need;
         return UpsertStatus::kOk;
     }
 
@@ -166,18 +164,28 @@ private:
         return StringBytes(key) + SizeOf(val);
     }
 
+    template <typename T, typename Fn>
+    void ApplyFn(std::string_view key, storage::Entry& entry, T& t, Fn&& fn) {
+        size_t new_bytes = 0;
+        if constexpr (std::is_void_v<std::invoke_result_t<Fn&, T&>>) {
+            std::forward<Fn>(fn)(t);
+            new_bytes = ValBytes(key, t);
+        } else {
+            const std::ptrdiff_t delta = std::forward<Fn>(fn)(t);
+            new_bytes = entry.bytes + delta;
+        }
+        mem_.Sub(entry.bytes);
+        mem_.Add(new_bytes);
+        entry.bytes = new_bytes;
+    }
+
     void WireExpiry() {
-        storage_.OnExpire([this](std::string_view key, const storage::ValueVar& v) {
-            mem_.Sub(std::visit([&](const auto& val) { return ValBytes(key, val); }, v));
-        });
+        storage_.OnExpire([this](std::string_view, size_t bytes) { mem_.Sub(bytes); });
     }
 
     size_t ExistingBytes(std::string_view key) {
-        const auto* var = storage_.Get(key);
-        if (var == nullptr) {
-            return 0;
-        }
-        return std::visit([&](const auto& val) { return ValBytes(key, val); }, *var);
+        const auto* entry = storage_.Get(key);
+        return entry == nullptr ? 0 : entry->bytes;
     }
 
     storage::Storage storage_;

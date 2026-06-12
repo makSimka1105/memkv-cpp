@@ -1,5 +1,6 @@
 #pragma once
 #include <algorithm>
+#include <cstddef>
 #include <cstdint>
 #include <optional>
 #include <string>
@@ -28,12 +29,15 @@ using LPopSchema = schema::Schema<LPop,
 io::Reply ExecLPop(engine::Engine& e, const LPop& x) {
     std::vector<std::string> popped;
     int64_t n = x.count.value_or(1);
-    auto st = e.Mutate<types::List>(x.key, [&](auto& lst) {
+    auto st = e.Mutate<types::List>(x.key, [&](auto& lst) -> std::ptrdiff_t {
         n = std::min<int64_t>(n, lst.size());
+        std::ptrdiff_t delta = 0;
         for (int64_t i = 0; i < n; ++i) {
+            delta -= types::ListTrait::ElementBytes(lst.front());
             popped.push_back(std::move(lst.front()));
             lst.pop_front();
         }
+        return delta;
     });
     if (st == engine::Engine::TypeStatus::kMissing) {
         return x.count.has_value() ? io::MakeArray({}) : io::MakeNil();

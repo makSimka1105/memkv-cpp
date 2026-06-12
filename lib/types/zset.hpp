@@ -11,10 +11,13 @@ namespace valkey::types {
 struct ZSetTrait {
     using Type = structures::ZSet;
     static constexpr std::string_view kName = "zset";
+    static size_t ElementBytes(std::string_view m) {
+        return sizeof(std::string) + m.size() + sizeof(double) + 32;
+    }
     static size_t SizeOf(const Type& z) {
         size_t total = sizeof(Type);
         for (const auto& [m, _] : z.scores) {
-            total += sizeof(std::string) + m.size() + sizeof(double) + 32;
+            total += ElementBytes(m);
         }
         return total;
     }

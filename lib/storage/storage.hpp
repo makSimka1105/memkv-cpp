@@ -22,6 +22,7 @@ using TimePoint = std::chrono::steady_clock::time_point;
 struct Entry {
     ValueVar value;
     std::optional<TimePoint> expires;
+    size_t bytes = 0;
 };
 
 class Storage {
@@ -30,22 +31,23 @@ public:
 
     void AdvanceClock(std::chrono::steady_clock::duration d) { skew_ += d; }
 
-    void OnExpire(std::function<void(std::string_view, const ValueVar&)> fn) {
+    void OnExpire(std::function<void(std::string_view, size_t)> fn) {
         on_expire_ = std::move(fn);
     }
 
-    void Set(std::string key, ValueVar value) {
-        map_.insert_or_assign(std::move(key), Entry{std::move(value), std::nullopt});
+    Entry& Set(std::string key, ValueVar value) {
+        return map_.insert_or_assign(std::move(key), Entry{std::move(value), std::nullopt})
+            .first->second;
     }
 
-    ValueVar* GetMutable(std::string_view key) {
+    Entry* GetMutable(std::string_view key) {
         auto it = FindLive(key);
-        return it == map_.end() ? nullptr : &it->second.value;
+        return it == map_.end() ? nullptr : &it->second;
     }
 
-    const ValueVar* Get(std::string_view key) {
+    const Entry* Get(std::string_view key) {
         auto it = FindLive(key);
-        return it == map_.end() ? nullptr : &it->second.value;
+        return it == map_.end() ? nullptr : &it->second;
     }
 
     bool Del(std::string_view key) {
@@ -132,14 +134,14 @@ private:
 
     Map::iterator EvictExpired(Map::iterator it) {
         if (on_expire_) {
-            on_expire_(it->first, it->second.value);
+            on_expire_(it->first, it->second.bytes);
         }
         return map_.erase(it);
     }
 
     Map map_;
     std::chrono::steady_clock::duration skew_{};
-    std::function<void(std::string_view, const ValueVar&)> on_expire_;
+    std::function<void(std::string_view, size_t)> on_expire_;
 };
 
 }  // namespace valkey::storage

@@ -67,7 +67,7 @@ io::Reply ExecZRangeByScore(engine::Engine& e, const ZRangeByScore& x) {
     std::vector<io::Reply> items;
     items.reserve(x.withscores ? entries.size() * 2 : entries.size());
     for (const auto& [score, member] : entries) {
-        items.push_back(io::MakeBulk(member));
+        items.push_back(io::MakeBulk(std::string(member)));
         if (x.withscores) {
             items.push_back(io::MakeBulk(std::format("{:.17g}", score)));
         }

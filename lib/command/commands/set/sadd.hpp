@@ -1,4 +1,5 @@
 #pragma once
+#include <cstddef>
 #include <cstdint>
 #include <string>
 #include <vector>
@@ -24,12 +25,15 @@ using SAddSchema = schema::Schema<SAdd,
 
 io::Reply ExecSAdd(engine::Engine& e, const SAdd& x) {
     int64_t added = 0;
-    auto status = e.Upsert<types::Set>(x.key, [&](auto& s) {
+    auto status = e.Upsert<types::Set>(x.key, [&](auto& s) -> std::ptrdiff_t {
+        std::ptrdiff_t delta = 0;
         for (const auto& m : x.members) {
             if (s.insert(m).second) {
                 ++added;
+                delta += types::SetTrait::ElementBytes(m);
             }
         }
+        return delta;
     });
     if (status == engine::Engine::UpsertStatus::kWrongType) {
         return engine::WrongTypeReply();

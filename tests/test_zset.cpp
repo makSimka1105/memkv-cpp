@@ -43,3 +43,13 @@ TEST(ZSet, EqualScoreLexOrderAndRank) {
     EXPECT_EQ(Exec(eng, "ZSCORE t bb\n"), "\"1\"\n");
     EXPECT_EQ(Exec(eng, "ZSCORE nokey x\n"), "(nil)\n");
 }
+
+TEST(ZSet, RankAfterMiddleEraseAndMove) {
+    engine::Engine eng;
+    EXPECT_EQ(Exec(eng, "ZADD k 1 a 2 b 3 c 4 d 5 e\n"), "(integer) 5\n");
+    EXPECT_EQ(Exec(eng, "ZREM k c\n"), "(integer) 1\n");
+    EXPECT_EQ(Exec(eng, "ZRANK k d\n"), "(integer) 2\n");
+    EXPECT_EQ(Exec(eng, "ZADD k 0 e\n"), "(integer) 0\n");
+    EXPECT_EQ(Exec(eng, "ZRANK k e\n"), "(integer) 0\n");
+    EXPECT_EQ(Exec(eng, "ZRANK k d\n"), "(integer) 3\n");
+}

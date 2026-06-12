@@ -1,4 +1,5 @@
 #pragma once
+#include <cstddef>
 #include <cstdint>
 #include <string>
 #include <vector>
@@ -35,12 +36,15 @@ io::Reply ExecZAdd(engine::Engine& e, const ZAdd& x) {
         return io::MakeErr("ERR wrong number of arguments for 'zadd' command");
     }
     int64_t added = 0;
-    auto status = e.Upsert<types::ZSet>(x.key, [&](auto& z) {
+    auto status = e.Upsert<types::ZSet>(x.key, [&](auto& z) -> std::ptrdiff_t {
+        std::ptrdiff_t delta = 0;
         for (const auto& entry : x.entries) {
             if (z.SetScore(entry.member, entry.score)) {
                 ++added;
+                delta += types::ZSetTrait::ElementBytes(entry.member);
             }
         }
+        return delta;
     });
     if (status == engine::Engine::UpsertStatus::kWrongType) {
         return engine::WrongTypeReply();

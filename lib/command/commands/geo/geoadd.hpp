@@ -1,4 +1,5 @@
 #pragma once
+#include <cstddef>
 #include <cstdint>
 #include <string>
 #include <vector>
@@ -37,12 +38,15 @@ io::Reply ExecGeoAdd(engine::Engine& e, const GeoAdd& x) {
         return io::MakeErr("ERR wrong number of arguments for 'geoadd' command");
     }
     int64_t added = 0;
-    auto status = e.Upsert<types::Geo>(x.key, [&](auto& g) {
+    auto status = e.Upsert<types::Geo>(x.key, [&](auto& g) -> std::ptrdiff_t {
+        std::ptrdiff_t delta = 0;
         for (const auto& entry : x.entries) {
             if (g.insert_or_assign(entry.member, types::GeoPoint{entry.lon, entry.lat}).second) {
                 ++added;
+                delta += types::GeoTrait::ElementBytes(entry.member);
             }
         }
+        return delta;
     });
     if (status == engine::Engine::UpsertStatus::kWrongType) {
         return engine::WrongTypeReply();

@@ -1,4 +1,5 @@
 #pragma once
+#include <cstddef>
 #include <cstdint>
 #include <string>
 #include <vector>
@@ -24,11 +25,14 @@ using RPushSchema = schema::Schema<RPush,
 
 io::Reply ExecRPush(engine::Engine& e, const RPush& x) {
     int64_t len = 0;
-    auto status = e.Upsert<types::List>(x.key, [&](auto& lst) {
+    auto status = e.Upsert<types::List>(x.key, [&](auto& lst) -> std::ptrdiff_t {
+        std::ptrdiff_t delta = 0;
         for (const auto& v : x.values) {
             lst.push_back(v);
+            delta += types::ListTrait::ElementBytes(v);
         }
         len = lst.size();
+        return delta;
     });
     if (status == engine::Engine::UpsertStatus::kWrongType) {
         return engine::WrongTypeReply();

@@ -1,4 +1,5 @@
 #pragma once
+#include <cstddef>
 #include <cstdint>
 #include <format>
 #include <optional>
@@ -27,13 +28,16 @@ using ZPopMaxSchema = schema::Schema<ZPopMax,
 io::Reply ExecZPopMax(engine::Engine& e, const ZPopMax& x) {
     size_t n = x.count.value_or(1);
     std::vector<io::Reply> items;
-    auto st = e.Mutate<types::ZSet>(x.key, [&](auto& z) {
+    auto st = e.Mutate<types::ZSet>(x.key, [&](auto& z) -> std::ptrdiff_t {
         auto popped = z.PopMax(n);
         items.reserve(popped.size() * 2);
+        std::ptrdiff_t delta = 0;
         for (const auto& [score, member] : popped) {
+            delta -= types::ZSetTrait::ElementBytes(member);
             items.push_back(io::MakeBulk(member));
             items.push_back(io::MakeBulk(std::format("{:.17g}", score)));
         }
+        return delta;
     });
     if (st == engine::Engine::TypeStatus::kMissing) {
         return io::MakeArray({});

@@ -21,7 +21,7 @@ public:
     ~SkipList() {
         Node* cur = head_;
         while (cur != nullptr) {
-            Node* nxt = cur->next[0];
+            Node* nxt = cur->links[0].to;
             delete cur;
             cur = nxt;
         }
@@ -35,33 +35,43 @@ public:
         int lvl = RandomLevel();
         if (lvl > current_level_) {
             for (int i = current_level_; i < lvl; ++i) {
-                path[i] = head_;
+                path.at[i] = head_;
+                path.rank[i] = 0;
+                head_->links[i].span = size_;
             }
             current_level_ = lvl;
         }
         Node* node = new Node(std::move(score), std::move(member), lvl);
         for (int i = 0; i < lvl; ++i) {
-            node->next[i] = path[i]->next[i];
-            path[i]->next[i] = node;
+            size_t left = path.rank[0] - path.rank[i];
+            node->links[i].to = path.at[i]->links[i].to;
+            node->links[i].span = path.at[i]->links[i].span - left;
+            path.at[i]->links[i].to = node;
+            path.at[i]->links[i].span = left + 1;
+        }
+        for (int i = lvl; i < current_level_; ++i) {
+            ++path.at[i]->links[i].span;
         }
         ++size_;
     }
 
     bool Erase(const Score& score, const Member& member) {
         auto path = FindPath(score, member);
-        Node* target = path[0]->next[0];
+        Node* target = path.at[0]->links[0].to;
         if (target == nullptr || target->score != score || target->member != member) {
             return false;
         }
         for (int i = 0; i < current_level_; ++i) {
-            if (path[i]->next[i] != target) {
-                break;
+            if (path.at[i]->links[i].to == target) {
+                path.at[i]->links[i].span += target->links[i].span - 1;
+                path.at[i]->links[i].to = target->links[i].to;
+            } else {
+                --path.at[i]->links[i].span;
             }
-            path[i]->next[i] = target->next[i];
         }
         delete target;
         --size_;
-        while (current_level_ > 1 && head_->next[current_level_ - 1] == nullptr) {
+        while (current_level_ > 1 && head_->links[current_level_ - 1].to == nullptr) {
             --current_level_;
         }
         return true;
@@ -71,7 +81,7 @@ public:
         std::vector<std::pair<Score, Member>> result;
         result.reserve(count);
         for (size_t i = 0; i < count && size_ > 0; ++i) {
-            Node* target = head_->next[0];
+            Node* target = head_->links[0].to;
             if (target == nullptr) {
                 break;
             }
@@ -87,8 +97,8 @@ public:
         for (size_t i = 0; i < count && size_ > 0; ++i) {
             Node* cur = head_;
             for (int lv = current_level_ - 1; lv >= 0; --lv) {
-                while (cur->next[lv] != nullptr) {
-                    cur = cur->next[lv];
+                while (cur->links[lv].to != nullptr) {
+                    cur = cur->links[lv].to;
                 }
             }
             if (cur == head_) {
@@ -104,28 +114,22 @@ public:
         if (max_s < min_s) {
             return 0;
         }
-        Node* cur = head_;
-        for (int i = current_level_ - 1; i >= 0; --i) {
-            while (cur->next[i] != nullptr && cur->next[i]->score < min_s) {
-                cur = cur->next[i];
-            }
-        }
-        cur = cur->next[0];
-        size_t count = 0;
-        while (cur != nullptr && !(max_s < cur->score)) {
-            ++count;
-            cur = cur->next[0];
-        }
-        return count;
+        return CountScoresNotAbove(max_s) - CountScoresBelow(min_s);
     }
 
     std::optional<size_t> Rank(const Score& score, const Member& member) const {
-        size_t idx = 0;
-        for (const Node* cur = head_->next[0]; cur != nullptr; cur = cur->next[0]) {
-            if (cur->score == score && cur->member == member) {
-                return idx;
+        const Node* cur = head_;
+        size_t traversed = 0;
+        for (int i = current_level_ - 1; i >= 0; --i) {
+            while (cur->links[i].to != nullptr &&
+                   IsLess(cur->links[i].to->score, cur->links[i].to->member, score, member)) {
+                traversed += cur->links[i].span;
+                cur = cur->links[i].to;
             }
-            ++idx;
+        }
+        const Node* candidate = cur->links[0].to;
+        if (candidate != nullptr && candidate->score == score && candidate->member == member) {
+            return traversed;
         }
         return std::nullopt;
     }
@@ -144,14 +148,11 @@ public:
         }
         hi = std::min(hi, size_ - 1);
         std::vector<std::pair<Score, Member>> result;
-        const Node* cur = head_->next[0];
-        size_t idx = 0;
-        while (cur != nullptr && idx <= hi) {
-            if (idx >= lo) {
-                result.emplace_back(cur->score, cur->member);
-            }
-            cur = cur->next[0];
-            ++idx;
+        result.reserve(hi - lo + 1);
+        const Node* cur = NodeAtRank(lo);
+        for (size_t idx = lo; idx <= hi; ++idx) {
+            result.emplace_back(cur->score, cur->member);
+            cur = cur->links[0].to;
         }
         return result;
     }
@@ -169,24 +170,17 @@ public:
         }
         Node* cur = head_;
         for (int i = current_level_ - 1; i >= 0; --i) {
-            while (cur->next[i] != nullptr && cur->next[i]->score < min_s) {
-                cur = cur->next[i];
+            while (cur->links[i].to != nullptr && cur->links[i].to->score < min_s) {
+                cur = cur->links[i].to;
             }
         }
-        cur = cur->next[0];
+        cur = cur->links[0].to;
         std::vector<std::pair<Score, Member>> result;
         while (cur != nullptr && !(max_s < cur->score)) {
             result.emplace_back(cur->score, cur->member);
-            cur = cur->next[0];
+            cur = cur->links[0].to;
         }
         return result;
-    }
-
-    std::vector<std::pair<Score, Member>> All() const {
-        if (size_ == 0) {
-            return {};
-        }
-        return RangeByRank(0, size_ - 1);
     }
 
     size_t Size() const { return size_; }
@@ -196,12 +190,17 @@ private:
     static constexpr double kProbability = 0.5;
 
     struct Node {
+        struct Link {
+            Node* to = nullptr;
+            size_t span = 0;
+        };
+
         Score score;
         Member member;
-        std::vector<Node*> next;
+        std::vector<Link> links;
 
         Node(Score s, Member m, int level)
-            : score(std::move(s)), member(std::move(m)), next(level, nullptr) {}
+            : score(std::move(s)), member(std::move(m)), links(level) {}
     };
 
     bool IsLess(const Score& s1, const Member& m1, const Score& s2, const Member& m2) const {
@@ -220,17 +219,64 @@ private:
         return level;
     }
 
-    std::array<Node*, kMaxLevel> FindPath(const Score& score, const Member& member) {
-        std::array<Node*, kMaxLevel> path{};
+    struct Path {
+        std::array<Node*, kMaxLevel> at;
+        std::array<size_t, kMaxLevel> rank;
+    };
+
+    Path FindPath(const Score& score, const Member& member) {
+        Path path{};
         Node* cur = head_;
+        size_t traversed = 0;
         for (int i = current_level_ - 1; i >= 0; --i) {
-            while (cur->next[i] != nullptr &&
-                   IsLess(cur->next[i]->score, cur->next[i]->member, score, member)) {
-                cur = cur->next[i];
+            while (cur->links[i].to != nullptr &&
+                   IsLess(cur->links[i].to->score, cur->links[i].to->member, score, member)) {
+                traversed += cur->links[i].span;
+                cur = cur->links[i].to;
             }
-            path[i] = cur;
+            path.at[i] = cur;
+            path.rank[i] = traversed;
         }
         return path;
+    }
+
+    size_t CountScoresBelow(const Score& bound) const {
+        const Node* cur = head_;
+        size_t traversed = 0;
+        for (int i = current_level_ - 1; i >= 0; --i) {
+            while (cur->links[i].to != nullptr && cur->links[i].to->score < bound) {
+                traversed += cur->links[i].span;
+                cur = cur->links[i].to;
+            }
+        }
+        return traversed;
+    }
+
+    size_t CountScoresNotAbove(const Score& bound) const {
+        const Node* cur = head_;
+        size_t traversed = 0;
+        for (int i = current_level_ - 1; i >= 0; --i) {
+            while (cur->links[i].to != nullptr && !(bound < cur->links[i].to->score)) {
+                traversed += cur->links[i].span;
+                cur = cur->links[i].to;
+            }
+        }
+        return traversed;
+    }
+
+    const Node* NodeAtRank(size_t target) const {
+        if (target >= size_) {
+            return nullptr;
+        }
+        const Node* cur = head_;
+        size_t traversed = 0;
+        for (int i = current_level_ - 1; i >= 0; --i) {
+            while (cur->links[i].to != nullptr && traversed + cur->links[i].span <= target) {
+                traversed += cur->links[i].span;
+                cur = cur->links[i].to;
+            }
+        }
+        return cur->links[0].to;
     }
 
     Node* head_;

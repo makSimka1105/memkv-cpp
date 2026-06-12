@@ -10,10 +10,11 @@ namespace valkey::types {
 struct SetTrait {
     using Type = std::unordered_set<std::string>;
     static constexpr std::string_view kName = "set";
+    static size_t ElementBytes(std::string_view e) { return sizeof(std::string) + e.size(); }
     static size_t SizeOf(const Type& s) {
         size_t total = sizeof(Type);
         for (const auto& e : s) {
-            total += sizeof(std::string) + e.size();
+            total += ElementBytes(e);
         }
         return total;
     }

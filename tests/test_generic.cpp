@@ -85,6 +85,17 @@ TEST(Generic, MemoryUsageExistingKey) {
     EXPECT_NE(result, "(nil)\n");
 }
 
+TEST(Generic, MemoryUsageMatchesRecreatedList) {
+    engine::Engine eng;
+    const size_t baseline = eng.UsedMemory();
+    Exec(eng, "RPUSH k1 aa bb cc\n");
+    Exec(eng, "RPUSH k1 dd ee\nLPOP k1 2\n");
+    Exec(eng, "RPUSH k2 cc dd ee\n");
+    EXPECT_EQ(Exec(eng, "MEMORY USAGE k1\n"), Exec(eng, "MEMORY USAGE k2\n"));
+    Exec(eng, "DEL k1 k2\n");
+    EXPECT_EQ(eng.UsedMemory(), baseline);
+}
+
 TEST(Generic, ConfigGetMaxmemory) {
     engine::Engine eng;
     EXPECT_EQ(Exec(eng, "CONFIG GET maxmemory\n"), "1) \"maxmemory\"\n2) \"0\"\n");
