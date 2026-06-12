@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "script/value.hpp"
+#include "util/hash.hpp"
 
 namespace valkey::script {
 
@@ -21,7 +22,7 @@ public:
 
     const ScriptValue* Lookup(std::string_view name) const {
         for (auto scope = scopes_.rbegin(); scope != scopes_.rend(); ++scope) {
-            if (auto it = scope->find(std::string(name)); it != scope->end()) {
+            if (auto it = scope->find(name); it != scope->end()) {
                 return &it->second;
             }
         }
@@ -30,7 +31,7 @@ public:
 
     bool Assign(std::string_view name, ScriptValue value) {
         for (auto scope = scopes_.rbegin(); scope != scopes_.rend(); ++scope) {
-            if (auto it = scope->find(std::string(name)); it != scope->end()) {
+            if (auto it = scope->find(name); it != scope->end()) {
                 it->second = std::move(value);
                 return true;
             }
@@ -39,7 +40,8 @@ public:
     }
 
 private:
-    std::vector<std::unordered_map<std::string, ScriptValue>> scopes_{1};
+    using Scope = std::unordered_map<std::string, ScriptValue, StringHash, std::equal_to<>>;
+    std::vector<Scope> scopes_{1};
 };
 
 }  // namespace valkey::script

@@ -19,25 +19,41 @@ struct DoubleRule {
             return std::nullopt;
         }
 
-        size_t i = 0;
-        while (std::isdigit(static_cast<unsigned char>(c.Peek(i)))) {
-            ++i;
+        size_t from = c.Pos();
+        auto sp = c.Save();
+        auto digits = [](char ch) { return std::isdigit(static_cast<unsigned char>(ch)) != 0; };
+
+        c.TakeWhile(digits);
+        bool is_double = false;
+        if (c.Peek() == '.') {
+            is_double = true;
+            c.Advance();
+            c.TakeWhile(digits);
         }
-        if (c.Peek(i) != '.') {
+        if (c.Peek() == 'e' || c.Peek() == 'E') {
+            is_double = true;
+            c.Advance();
+            if (c.Peek() == '+' || c.Peek() == '-') {
+                c.Advance();
+            }
+            c.TakeWhile(digits);
+        }
+        if (!is_double) {
             return std::nullopt;
         }
 
-        size_t from = c.Pos();
-        c.TakeWhile([](char ch) { return std::isdigit(static_cast<unsigned char>(ch)); });
-        c.Advance();
-        c.TakeWhile([](char ch) { return std::isdigit(static_cast<unsigned char>(ch)); });
+        char next = c.Peek();
+        if (std::isalpha(static_cast<unsigned char>(next)) || next == '_' || next == '.') {
+            return MakeError(ErrKind::kLex, "malformed double literal");
+        }
 
         double val{};
         auto sv = c.SliceFrom(from);
         auto [ptr, ec] = std::from_chars(sv.data(), sv.data() + sv.size(), val);
-        if (ec != std::errc{}) {
+        if (ec != std::errc{} || ptr != sv.data() + sv.size()) {
             return MakeError(ErrKind::kLex, "malformed double literal");
         }
+        sp.Commit();
         return Token{TkDouble{val}};
     }
 };

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <array>
 #include <optional>
 #include <utility>
 #include <variant>
@@ -34,6 +35,24 @@ constexpr std::pair<TkKw::Keyword, OpDesc> kKwBinOps[] = {
     {TkKw::kOr, {TkOp::kAssign, BinOp::kOr, 1, 2}},
     {TkKw::kAnd, {TkOp::kAssign, BinOp::kAnd, 3, 4}},
 };
+
+constexpr bool CoversAllBinOps() {
+    std::array<int, BinOp::kLast> count{};
+    for (const auto& desc : kBinOps) {
+        ++count[desc.ast_op];
+    }
+    for (const auto& [kw, desc] : kKwBinOps) {
+        ++count[desc.ast_op];
+    }
+    for (int c : count) {
+        if (c != 1) {
+            return false;
+        }
+    }
+    return true;
+}
+
+static_assert(CoversAllBinOps(), "parser op tables do not cover BinOp");
 
 std::optional<PrefixDesc> GetPrefixUnary(const Token& tok) {
     if (const auto* op = std::get_if<TkOp>(&tok)) {

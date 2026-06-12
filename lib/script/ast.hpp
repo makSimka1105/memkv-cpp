@@ -54,7 +54,7 @@ struct BinOp {
 };
 
 struct UnOp {
-    enum Kind { kNeg, kNot };
+    enum Kind { kNeg, kNot, kLast };
     Kind op;
     Box<Expr> operand;
 };

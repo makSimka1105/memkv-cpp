@@ -1,11 +1,11 @@
 #pragma once
 
-#include <cctype>
 #include <expected>
 #include <string>
 #include <vector>
 
 #include "cursor/char_cursor.hpp"
+#include "lex/char_class.hpp"
 #include "lex/engine.hpp"
 #include "script/error.hpp"
 #include "script/token.hpp"
@@ -25,7 +25,7 @@ struct ScriptSpec {
     using Error = ScriptError;
     using Rules = lex::RuleSet<DoubleRule, IntRule, StringRule, KwRule, IdentRule, OpRule, PunctRule>;
 
-    static bool Skip(char c) { return std::isspace(static_cast<unsigned char>(c)); }
+    static bool Skip(char c) { return lex::IsSpace(c); }
 
     static Error OnUnexpected(char c) {
         return ScriptError{ErrKind::kLex, std::string("unexpected character: ") + c};

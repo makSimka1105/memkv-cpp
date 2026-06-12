@@ -3,6 +3,7 @@ add_library(valkey_core INTERFACE)
 target_include_directories(valkey_core INTERFACE ${CMAKE_CURRENT_SOURCE_DIR})
 
 add_subdirectory(meta)
+add_subdirectory(util)
 add_subdirectory(cursor)
 add_subdirectory(lex)
 add_subdirectory(command)

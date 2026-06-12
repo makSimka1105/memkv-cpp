@@ -4,6 +4,7 @@
 #include <cstdint>
 #include <variant>
 
+#include "meta/table.hpp"
 #include "meta/try.hpp"
 #include "script/ast.hpp"
 #include "script/error.hpp"
@@ -110,6 +111,7 @@ constexpr std::array<BinaryRule, BinOp::kLast> BuildTable() {
 }
 
 constexpr auto kBinaryTable = BuildTable();
+static_assert(AllSet(kBinaryTable), "BinOp evaluator table incomplete");
 
 }  // namespace bin_detail
 

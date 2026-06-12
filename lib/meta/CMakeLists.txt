@@ -7,4 +7,5 @@ target_sources(valkey_core
         ${CMAKE_CURRENT_SOURCE_DIR}/type_list.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/try.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/match_first.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/table.hpp
 )

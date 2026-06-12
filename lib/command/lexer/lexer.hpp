@@ -5,6 +5,7 @@
 #include <vector>
 
 #include "cursor/char_cursor.hpp"
+#include "lex/char_class.hpp"
 #include "lex/engine.hpp"
 #include "command/lexer/rules/float.hpp"
 #include "command/lexer/rules/int.hpp"
@@ -22,7 +23,7 @@ struct CmdSpec {
     using Error = DiagnosticMessage;
     using Rules = lex::RuleSet<QuotedStringRule, IntRule, FloatRule, WordRule>;
 
-    static bool Skip(char c) { return detail::IsWhitespace(c); }
+    static bool Skip(char c) { return lex::IsSpace(c); }
 
     static Error OnUnexpected(char) { return DiagnosticMessage{"no handler matched"}; }
 
