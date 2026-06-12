@@ -9,7 +9,7 @@
 
 namespace valkey::script {
 
-class TokenCursor;
+class ScriptTokenCursor;
 
 template <typename T>
 using ParseResult = std::expected<T, ScriptError>;
@@ -25,7 +25,7 @@ struct ParserProbe;
 
 template <typename T>
 concept Dispatchable =
-    requires(const Token& tok, TokenCursor& cursor, detail::ParserProbe& parser) {
+    requires(const Token& tok, ScriptTokenCursor& cursor, detail::ParserProbe& parser) {
         { T::Matches(tok) } -> std::convertible_to<bool>;
         T::Parse(cursor, parser);
     };

@@ -6,6 +6,9 @@
 #include "io/stdin_frontend.hpp"
 
 int main(int argc, char* argv[]) {
+    std::ios::sync_with_stdio(false);
+    std::cin.tie(nullptr);
+
     valkey::engine::Config cfg;
 
     for (int i = 1; i < argc; ++i) {

@@ -6,10 +6,6 @@
 
 namespace valkey::script {
 
-struct Span {
-    uint32_t lo;
-    uint32_t hi;
-};
 
 struct TkInt {
     int64_t value;
@@ -77,10 +73,5 @@ struct TkEof {};
 
 using Token = std::variant<TkInt, TkDouble, TkStr, TkIdent, TkKw, TkOp, TkLParen, TkRParen,
                            TkLBrace, TkRBrace, TkLBrack, TkRBrack, TkComma, TkSemi, TkAt, TkEof>;
-
-struct SpannedToken {
-    Token tok;
-    Span span;
-};
 
 }  // namespace valkey::script

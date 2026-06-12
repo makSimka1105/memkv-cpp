@@ -59,9 +59,9 @@ TEST(ListTest, LLenAndWrongType) {
     engine::Engine eng;
     Exec(eng,"SET strkey hello\n");
     EXPECT_EQ(Exec(eng,"LLEN strkey\n"), "(error) WRONGTYPE Operation against a key holding the wrong kind of value\n");
-    EXPECT_EQ(Exec(eng,"LLEN missing\n"), "(int) 0\n");
+    EXPECT_EQ(Exec(eng,"LLEN missing\n"), "(integer) 0\n");
     Exec(eng,"RPUSH mylist a b c\n");
-    EXPECT_EQ(Exec(eng,"LLEN mylist\n"), "(int) 3\n");
+    EXPECT_EQ(Exec(eng,"LLEN mylist\n"), "(integer) 3\n");
 }
 
 TEST(ListTest, LRangeNegativeIndices) {
@@ -91,10 +91,10 @@ TEST(ListTest, LSetUpdate) {
 TEST(ListTest, LInsertBeforeAfter) {
     engine::Engine eng;
     Exec(eng,"RPUSH mylist a b c\n");
-    EXPECT_EQ(Exec(eng,"LINSERT mylist BEFORE b X\n"), "(int) 4\n");
+    EXPECT_EQ(Exec(eng,"LINSERT mylist BEFORE b X\n"), "(integer) 4\n");
     EXPECT_EQ(Exec(eng,"LRANGE mylist 0 -1\n"), "1) \"a\"\n2) \"X\"\n3) \"b\"\n4) \"c\"\n");
-    EXPECT_EQ(Exec(eng,"LINSERT mylist AFTER b Y\n"), "(int) 5\n");
+    EXPECT_EQ(Exec(eng,"LINSERT mylist AFTER b Y\n"), "(integer) 5\n");
     EXPECT_EQ(Exec(eng,"LRANGE mylist 0 -1\n"), "1) \"a\"\n2) \"X\"\n3) \"b\"\n4) \"Y\"\n5) \"c\"\n");
-    EXPECT_EQ(Exec(eng,"LINSERT mylist BEFORE nopivot Z\n"), "(int) -1\n");
-    EXPECT_EQ(Exec(eng,"LINSERT nokey BEFORE a Z\n"), "(int) 0\n");
+    EXPECT_EQ(Exec(eng,"LINSERT mylist BEFORE nopivot Z\n"), "(integer) -1\n");
+    EXPECT_EQ(Exec(eng,"LINSERT nokey BEFORE a Z\n"), "(integer) 0\n");
 }

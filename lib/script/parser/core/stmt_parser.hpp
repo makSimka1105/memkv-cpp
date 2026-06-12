@@ -17,7 +17,7 @@ namespace valkey::script {
 template <typename ExprParser, Dispatchable... Ts>
 class StmtParser {
 public:
-    StmtParser(TokenCursor& cursor, ExprParser& expr_parser)
+    StmtParser(ScriptTokenCursor& cursor, ExprParser& expr_parser)
         : cursor_(cursor), expr_parser_(expr_parser) {}
 
     ParseResult<Expr> ParseExpr(int min_binding_power = 0) {
@@ -60,7 +60,7 @@ private:
         return ExprStmt{std::move(expr)};
     }
 
-    TokenCursor& cursor_;
+    ScriptTokenCursor& cursor_;
     ExprParser& expr_parser_;
 };
 

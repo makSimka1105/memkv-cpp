@@ -32,10 +32,12 @@ struct List {
 using ValueResult = std::expected<ScriptValue, ScriptError>;
 
 bool IsTruthy(const ScriptValue& value) {
-    if (std::holds_alternative<Nil>(value))
+    if (std::holds_alternative<Nil>(value)) {
         return false;
-    if (const bool* flag = std::get_if<bool>(&value))
+    }
+    if (const bool* flag = std::get_if<bool>(&value)) {
         return *flag;
+    }
     return true;
 }
 
@@ -72,10 +74,12 @@ template <Numeric L, Numeric R>
 using CommonNumeric = std::conditional_t<(NumericRank<L>::value >= NumericRank<R>::value), L, R>;
 
 std::optional<NumericVal> AsNumeric(const ScriptValue& v) {
-    if (const auto* i = std::get_if<int64_t>(&v))
+    if (const auto* i = std::get_if<int64_t>(&v)) {
         return NumericVal{*i};
-    if (const auto* d = std::get_if<double>(&v))
+    }
+    if (const auto* d = std::get_if<double>(&v)) {
         return NumericVal{*d};
+    }
     return std::nullopt;
 }
 
@@ -97,8 +101,9 @@ bool ValuesEqual(const ScriptValue& l, const ScriptValue& r) {
 ValueResult ApplyNumeric(const ScriptValue& l, const ScriptValue& r, auto op) {
     auto nl = AsNumeric(l);
     auto nr = AsNumeric(r);
-    if (!nl || !nr)
+    if (!nl || !nr) {
         return MakeError(ErrKind::kType, "operator expects numbers");
+    }
     return std::visit(
         [&op](auto lv, auto rv) -> ValueResult {
             using C = CommonNumeric<std::decay_t<decltype(lv)>, std::decay_t<decltype(rv)>>;

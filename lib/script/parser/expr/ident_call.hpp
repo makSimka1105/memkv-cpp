@@ -14,7 +14,7 @@ namespace valkey::script {
 struct IdentOrCallParser {
     static bool Matches(const Token& tok) { return std::holds_alternative<TkIdent>(tok); }
     template <typename ExprParser>
-    static ParseResult<Expr> Parse(TokenCursor& cursor, ExprParser& expr_parser) {
+    static ParseResult<Expr> Parse(ScriptTokenCursor& cursor, ExprParser& expr_parser) {
         std::string name = std::get<TkIdent>(cursor.Advance()).name;
         if (!cursor.Is<TkLParen>()) {
             return Ident{std::move(name)};
@@ -29,7 +29,7 @@ struct IdentOrCallParser {
 struct ScriptCallParser {
     static bool Matches(const Token& tok) { return std::holds_alternative<TkAt>(tok); }
     template <typename ExprParser>
-    static ParseResult<Expr> Parse(TokenCursor& cursor, ExprParser& expr_parser) {
+    static ParseResult<Expr> Parse(ScriptTokenCursor& cursor, ExprParser& expr_parser) {
         cursor.Advance();
         const auto* ident = cursor.As<TkIdent>();
         if (!ident) {

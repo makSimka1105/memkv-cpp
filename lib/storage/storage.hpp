@@ -32,6 +32,14 @@ struct StringHash {
 
 class Storage {
 public:
+    TimePoint Now() const { return std::chrono::steady_clock::now() + skew_; }
+
+    void AdvanceClock(std::chrono::steady_clock::duration d) { skew_ += d; }
+
+    void OnExpire(std::function<void(std::string_view, const ValueVar&)> fn) {
+        on_expire_ = std::move(fn);
+    }
+
     void Set(std::string key, ValueVar value) {
         map_.insert_or_assign(std::move(key), Entry{std::move(value), std::nullopt});
     }
@@ -47,7 +55,7 @@ public:
     }
 
     bool Del(std::string_view key) {
-        auto it = map_.find(key);
+        auto it = FindLive(key);
         if (it == map_.end()) {
             return false;
         }
@@ -64,12 +72,12 @@ public:
 
     void FlushDb() { map_.clear(); }
 
-    bool Expire(std::string_view key, TimePoint when) {
-        auto it = map_.find(key);
+    bool Expire(std::string_view key, std::chrono::steady_clock::duration ttl) {
+        auto it = FindLive(key);
         if (it == map_.end()) {
             return false;
         }
-        it->second.expires = when;
+        it->second.expires = Now() + ttl;
         return true;
     }
 
@@ -82,17 +90,17 @@ public:
             return -1;
         }
         auto remaining = std::chrono::duration_cast<std::chrono::seconds>(
-                             *it->second.expires - std::chrono::steady_clock::now())
+                             *it->second.expires - Now())
                              .count();
         return remaining < 0 ? 0 : remaining;
     }
 
     size_t SweepExpired() {
-        const auto now = std::chrono::steady_clock::now();
+        const auto now = Now();
         size_t removed = 0;
         for (auto it = map_.begin(); it != map_.end();) {
             if (it->second.expires && *it->second.expires <= now) {
-                it = map_.erase(it);
+                it = EvictExpired(it);
                 ++removed;
             } else {
                 ++it;
@@ -116,19 +124,28 @@ private:
     using Map = std::unordered_map<std::string, Entry, StringHash, std::equal_to<>>;
 
     Map::iterator FindLive(std::string_view key) {
-        const auto now = std::chrono::steady_clock::now();
+        const auto now = Now();
         auto it = map_.find(key);
         if (it == map_.end()) {
             return it;
         }
         if (it->second.expires && *it->second.expires <= now) {
-            map_.erase(it);
+            EvictExpired(it);
             return map_.end();
         }
         return it;
     }
 
+    Map::iterator EvictExpired(Map::iterator it) {
+        if (on_expire_) {
+            on_expire_(it->first, it->second.value);
+        }
+        return map_.erase(it);
+    }
+
     Map map_;
+    std::chrono::steady_clock::duration skew_{};
+    std::function<void(std::string_view, const ValueVar&)> on_expire_;
 };
 
 }  // namespace valkey::storage

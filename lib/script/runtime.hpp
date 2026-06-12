@@ -10,14 +10,14 @@
 #include "io/reply.hpp"
 #include "script/ast.hpp"
 #include "script/evaluator/evaluator.hpp"
-#include "script/lexer/scanner.hpp"
+#include "script/lexer/lexer.hpp"
 #include "script/parser/parser.hpp"
 
 namespace valkey::script {
 
 io::Reply Run(engine::Engine& engine, std::string_view src,
                      std::span<const std::string> keys, std::span<const std::string> argv) {
-    auto tokens = Lex(src);
+    auto tokens = Tokenize(src);
     if (!tokens) {
         return io::MakeErr("ERR " + tokens.error().message);
     }

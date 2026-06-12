@@ -14,10 +14,10 @@ namespace valkey::script {
 
 class Parser {
 public:
-    explicit Parser(std::vector<SpannedToken> tokens) : tokens_(std::move(tokens)) {}
+    explicit Parser(std::vector<Token> tokens) : tokens_(std::move(tokens)) {}
 
     ParseResult<Program> ParseProgram() {
-        TokenCursor cursor{std::move(tokens_)};
+        ScriptTokenCursor cursor{tokens_};
         ActiveExprParser expr_parser{cursor};
         ActiveStmtParser stmt_parser{cursor, expr_parser};
         std::vector<Stmt> stmts;
@@ -29,7 +29,7 @@ public:
     }
 
 private:
-    std::vector<SpannedToken> tokens_;
+    std::vector<Token> tokens_;
 };
 
 }  // namespace valkey::script

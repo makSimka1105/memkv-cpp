@@ -14,7 +14,7 @@ namespace valkey::script {
 struct ReturnParser {
     static bool Matches(const Token& tok) { return TokenIsKw(tok, TkKw::kReturn); }
     template <typename Sp>
-    static ParseResult<Stmt> Parse(TokenCursor& cursor, Sp& stmt_parser) {
+    static ParseResult<Stmt> Parse(ScriptTokenCursor& cursor, Sp& stmt_parser) {
         cursor.Advance();
         if (cursor.Is<TkSemi>()) {
             cursor.Advance();

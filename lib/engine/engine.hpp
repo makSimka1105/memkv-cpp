@@ -36,6 +36,9 @@ public:
     }
 
     int64_t TtlSeconds(std::string_view key) { return store_.TtlSeconds(key); }
+
+    void AdvanceClock(std::chrono::steady_clock::duration d) { store_.AdvanceClock(d); }
+
     size_t DbSize() { return store_.DbSize(); }
     size_t UsedMemory() const { return store_.UsedMemory(); }
     size_t MaxMemory() const { return store_.MaxMemory(); }

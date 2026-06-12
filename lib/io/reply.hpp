@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdint>
+#include <format>
 #include <memory>
 #include <string>
 #include <utility>
@@ -57,6 +58,10 @@ Reply MakeBool(bool v) {
 
 Reply MakeBulk(std::string v) {
     return BulkStr{std::move(v)};
+}
+
+Reply MakeBulk(double v) {
+    return BulkStr{std::format("{:.2f}", v)};
 }
 
 Reply MakeErr(std::string m) {

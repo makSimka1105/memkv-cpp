@@ -18,7 +18,7 @@ namespace valkey::script {
 template <Dispatchable... Ts>
 class ExprParser {
 public:
-    explicit ExprParser(TokenCursor& cursor) : cursor_(cursor) {}
+    explicit ExprParser(ScriptTokenCursor& cursor) : cursor_(cursor) {}
 
     ParseResult<Expr> ParsePrimary() {
         auto hit = ParseletSet<Ts...>::template TryParse<Expr>(cursor_, *this);
@@ -66,7 +66,7 @@ public:
     }
 
 private:
-    TokenCursor& cursor_;
+    ScriptTokenCursor& cursor_;
 };
 
 }  // namespace valkey::script

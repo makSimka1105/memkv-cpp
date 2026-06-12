@@ -4,15 +4,15 @@
 #include <variant>
 #include <vector>
 
-#include "commands/transaction/discard.hpp"
-#include "commands/transaction/exec.hpp"
-#include "commands/transaction/multi.hpp"
+#include "command/commands/transaction/discard.hpp"
+#include "command/commands/transaction/exec.hpp"
+#include "command/commands/transaction/multi.hpp"
 #include "engine/engine.hpp"
 #include "engine/eval.hpp"
 #include "engine/session.hpp"
 #include "io/reply.hpp"
 #include "meta/overload.hpp"
-#include "parser/cmd.hpp"
+#include "command/parser/cmd.hpp"
 
 namespace valkey::engine {
 

@@ -5,9 +5,9 @@
 #include <string>
 #include <vector>
 
-#include "commands/script/eval.hpp"
-#include "commands/script/func.hpp"
-#include "commands/script/funccall.hpp"
+#include "command/commands/script/eval.hpp"
+#include "command/commands/script/func.hpp"
+#include "command/commands/script/funccall.hpp"
 #include "engine/engine.hpp"
 #include "engine/eval.hpp"
 #include "io/human.hpp"
@@ -71,8 +71,8 @@ TEST_F(ScriptFunctions, EvalExercisesCoreMechanics) {
     auto out = Eval(script, {"mylist", "flag"}, {"aa", "bbb", "c"});
 
     EXPECT_EQ(out,
-              "1) (int) 3\n"
-              "2) (int) 6\n"
+              "1) (integer) 3\n"
+              "2) (integer) 6\n"
               "3) \"big\"\n");
 }
 
@@ -100,14 +100,14 @@ TEST_F(ScriptFunctions, FuncRegisterBigScriptThenCallTwice) {
     auto second = Call("summarize", {"sum", "log"}, {"x", "yy"});
 
     EXPECT_EQ(first,
-              "1) (int) 1\n"
-              "2) (int) 2\n"
-              "3) (int) 9\n"
+              "1) (integer) 1\n"
+              "2) (integer) 2\n"
+              "3) (integer) 9\n"
               "4) (true)\n");
     EXPECT_EQ(second,
-              "1) (int) 2\n"
-              "2) (int) 1\n"
-              "3) (int) 3\n"
+              "1) (integer) 2\n"
+              "2) (integer) 1\n"
+              "3) (integer) 3\n"
               "4) (false)\n");
 }
 
@@ -128,8 +128,8 @@ TEST_F(ScriptFunctions, NestedFuncCallThroughFuncCall) {
     auto first = Call("tagall", {"tags"}, {"red", "green", "red", "blue"});
     auto second = Call("tagall", {"tags"}, {"red", "yellow"});
 
-    EXPECT_EQ(first, "(int) 3\n");
-    EXPECT_EQ(second, "(int) 4\n");
+    EXPECT_EQ(first, "(integer) 3\n");
+    EXPECT_EQ(second, "(integer) 4\n");
 }
 
 TEST_F(ScriptFunctions, DirectCallToRegisteredFunctionByAtSyntax) {
@@ -142,7 +142,7 @@ TEST_F(ScriptFunctions, DirectCallToRegisteredFunctionByAtSyntax) {
     )");
 
     auto out = Eval(R"(return @double_len("aa", "bbb");)", {}, {});
-    EXPECT_EQ(out, "(int) 10\n");
+    EXPECT_EQ(out, "(integer) 10\n");
 }
 
 }  // namespace

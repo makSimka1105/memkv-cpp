@@ -4,15 +4,15 @@
 #include <variant>
 #include <vector>
 
-#include "commands/all.hpp"
-#include "commands/tree.hpp"
+#include "command/commands/all.hpp"
+#include "command/commands/tree.hpp"
 #include "engine/dispatcher.hpp"
 #include "engine/engine.hpp"
 #include "io/reply.hpp"
-#include "lexer/lexer.hpp"
-#include "lexer/types.hpp"
-#include "parser/cmd.hpp"
-#include "parser/parser.hpp"
+#include "command/lexer/lexer.hpp"
+#include "command/lexer/types.hpp"
+#include "command/parser/cmd.hpp"
+#include "command/parser/parser.hpp"
 
 namespace valkey::engine {
 
@@ -32,8 +32,9 @@ void SetupEngine(engine::Engine& eng) {
     eng.SetRawEvalFn([&eng](const std::vector<std::string>& args) -> io::Reply {
         std::vector<parser::Token> tokens;
         tokens.reserve(args.size() + 1);
-        for (const auto& a : args)
+        for (const auto& a : args) {
             tokens.push_back(ClassifyRawArg(a));
+        }
         tokens.push_back(parser::TkEof{});
         auto cmd = parser::Parse(tokens);
         if (!cmd) {

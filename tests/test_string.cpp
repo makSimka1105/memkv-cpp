@@ -1,3 +1,5 @@
+#include <chrono>
+#include <cstddef>
 #include <sstream>
 #include <string>
 #include <string_view>
@@ -35,9 +37,9 @@ TEST(GetWrongType, ReturnsWrongtype) {
 
 TEST(AppendCreatesAndExtends, LengthIsCorrect) {
     engine::Engine eng;
-    EXPECT_EQ(Exec(eng,"APPEND greet Hello\n"), "(int) 5\n");
-    EXPECT_EQ(Exec(eng,"APPEND greet World\n"), "(int) 10\n");
-    EXPECT_EQ(Exec(eng,"STRLEN greet\n"), "(int) 10\n");
+    EXPECT_EQ(Exec(eng,"APPEND greet Hello\n"), "(integer) 5\n");
+    EXPECT_EQ(Exec(eng,"APPEND greet World\n"), "(integer) 10\n");
+    EXPECT_EQ(Exec(eng,"STRLEN greet\n"), "(integer) 10\n");
 }
 
 TEST(AppendWrongType, ReturnsWrongtype) {
@@ -50,37 +52,46 @@ TEST(AppendWrongType, ReturnsWrongtype) {
 TEST(StrlenExisting, ReturnsCorrectLength) {
     engine::Engine eng;
     Exec(eng,"SET word abcde\n");
-    EXPECT_EQ(Exec(eng,"STRLEN word\n"), "(int) 5\n");
+    EXPECT_EQ(Exec(eng,"STRLEN word\n"), "(integer) 5\n");
 }
 
 TEST(StrlenMissingKey, ReturnsZero) {
     engine::Engine eng;
-    EXPECT_EQ(Exec(eng,"STRLEN ghost\n"), "(int) 0\n");
+    EXPECT_EQ(Exec(eng,"STRLEN ghost\n"), "(integer) 0\n");
 }
 
 TEST(ExpireAndTtl, TtlPositiveAndBounded) {
     engine::Engine eng;
     Exec(eng,"SET k v\n");
-    EXPECT_EQ(Exec(eng,"EXPIRE k 10\n"), "(int) 1\n");
-    std::istringstream in{"TTL k\n"};
-    std::ostringstream out;
-    io::RunStdinRepl(eng, in, out);
-    const std::string result = out.str();
-    ASSERT_EQ(result.substr(0, 6), "(int) ");
-    int ttl = std::stoi(result.substr(6));
-    EXPECT_GT(ttl, 0);
-    EXPECT_LE(ttl, 10);
+    EXPECT_EQ(Exec(eng,"EXPIRE k 10\n"), "(integer) 1\n");
+    EXPECT_EQ(Exec(eng,"TTL k\n"), "(integer) 9\n");
+    eng.AdvanceClock(std::chrono::seconds(11));
+    EXPECT_EQ(Exec(eng,"GET k\n"), "(nil)\n");
+    EXPECT_EQ(Exec(eng,"TTL k\n"), "(integer) -2\n");
+}
+
+TEST(ExpireAndTtl, ExpiredKeyReleasesMemory) {
+    engine::Engine eng;
+    const size_t baseline = eng.UsedMemory();
+    Exec(eng,"SET k v\n");
+    EXPECT_GT(eng.UsedMemory(), baseline);
+    EXPECT_EQ(Exec(eng,"EXPIRE k 1\n"), "(integer) 1\n");
+    eng.AdvanceClock(std::chrono::seconds(2));
+    EXPECT_EQ(Exec(eng,"GET k\n"), "(nil)\n");
+    EXPECT_EQ(eng.UsedMemory(), baseline);
+    EXPECT_EQ(Exec(eng,"DEL k\n"), "(integer) 0\n");
+    EXPECT_EQ(eng.UsedMemory(), baseline);
 }
 
 TEST(TtlNoExpiry, ReturnsMinusOne) {
     engine::Engine eng;
     Exec(eng,"SET k v\n");
-    EXPECT_EQ(Exec(eng,"TTL k\n"), "(int) -1\n");
+    EXPECT_EQ(Exec(eng,"TTL k\n"), "(integer) -1\n");
 }
 
 TEST(TtlMissingKey, ReturnsMinusTwo) {
     engine::Engine eng;
-    EXPECT_EQ(Exec(eng,"TTL ghost\n"), "(int) -2\n");
+    EXPECT_EQ(Exec(eng,"TTL ghost\n"), "(integer) -2\n");
 }
 
 TEST(SetOom, RejectsWithOomError) {

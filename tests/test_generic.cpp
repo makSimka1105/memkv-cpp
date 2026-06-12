@@ -42,46 +42,46 @@ TEST(Generic, KeysEmpty) {
 TEST(Generic, ExistsHitAndMiss) {
     engine::Engine eng;
     Exec(eng, "SET present 1\n");
-    EXPECT_EQ(Exec(eng, "EXISTS present\n"), "(int) 1\n");
-    EXPECT_EQ(Exec(eng, "EXISTS absent\n"), "(int) 0\n");
-    EXPECT_EQ(Exec(eng, "EXISTS present present\n"), "(int) 2\n");
+    EXPECT_EQ(Exec(eng, "EXISTS present\n"), "(integer) 1\n");
+    EXPECT_EQ(Exec(eng, "EXISTS absent\n"), "(integer) 0\n");
+    EXPECT_EQ(Exec(eng, "EXISTS present present\n"), "(integer) 2\n");
 }
 
 TEST(Generic, DelExistingAndMissing) {
     engine::Engine eng;
     Exec(eng, "SET k1 v1\nSET k2 v2\n");
-    EXPECT_EQ(Exec(eng, "DEL k1\n"), "(int) 1\n");
+    EXPECT_EQ(Exec(eng, "DEL k1\n"), "(integer) 1\n");
     EXPECT_EQ(Exec(eng, "GET k1\n"), "(nil)\n");
-    EXPECT_EQ(Exec(eng, "DEL ghost\n"), "(int) 0\n");
-    EXPECT_EQ(Exec(eng, "DEL k2 ghost\n"), "(int) 1\n");
+    EXPECT_EQ(Exec(eng, "DEL ghost\n"), "(integer) 0\n");
+    EXPECT_EQ(Exec(eng, "DEL k2 ghost\n"), "(integer) 1\n");
 }
 
 TEST(Generic, FlushDb) {
     engine::Engine eng;
     Exec(eng, "SET a 1\nSET b 2\n");
     EXPECT_EQ(Exec(eng, "FLUSHDB\n"), "OK\n");
-    EXPECT_EQ(Exec(eng, "DBSIZE\n"), "(int) 0\n");
+    EXPECT_EQ(Exec(eng, "DBSIZE\n"), "(integer) 0\n");
 }
 
 TEST(Generic, DbSize) {
     engine::Engine eng;
-    EXPECT_EQ(Exec(eng, "DBSIZE\n"), "(int) 0\n");
+    EXPECT_EQ(Exec(eng, "DBSIZE\n"), "(integer) 0\n");
     Exec(eng, "SET x 1\nSET y 2\n");
-    EXPECT_EQ(Exec(eng, "DBSIZE\n"), "(int) 2\n");
+    EXPECT_EQ(Exec(eng, "DBSIZE\n"), "(integer) 2\n");
     Exec(eng, "DEL x\n");
-    EXPECT_EQ(Exec(eng, "DBSIZE\n"), "(int) 1\n");
+    EXPECT_EQ(Exec(eng, "DBSIZE\n"), "(integer) 1\n");
 }
 
 TEST(Generic, MemoryUsageMissingKey) {
     engine::Engine eng;
-    EXPECT_EQ(Exec(eng, "MEMORY USAGE ghost\n"), "(int) 0\n");
+    EXPECT_EQ(Exec(eng, "MEMORY USAGE ghost\n"), "(integer) 0\n");
 }
 
 TEST(Generic, MemoryUsageExistingKey) {
     engine::Engine eng;
     Exec(eng, "SET mykey somevalue\n");
     std::string result = Exec(eng, "MEMORY USAGE mykey\n");
-    EXPECT_NE(result, "(int) 0\n");
+    EXPECT_NE(result, "(integer) 0\n");
     EXPECT_NE(result, "(nil)\n");
 }
 

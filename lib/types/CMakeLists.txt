@@ -7,4 +7,5 @@ target_sources(valkey_core
         ${CMAKE_CURRENT_SOURCE_DIR}/list.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/set.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/zset.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/geo.hpp
 )

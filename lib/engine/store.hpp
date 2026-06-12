@@ -21,6 +21,20 @@ public:
     enum class TypeStatus { kOk, kMissing, kWrongType };
     enum class UpsertStatus { kOk, kWrongType, kOom };
 
+    Store() { WireExpiry(); }
+    Store(const Store&) = delete;
+    Store& operator=(const Store&) = delete;
+    Store(Store&& other) noexcept
+        : storage_(std::move(other.storage_)), mem_(std::move(other.mem_)) {
+        WireExpiry();
+    }
+    Store& operator=(Store&& other) noexcept {
+        storage_ = std::move(other.storage_);
+        mem_ = std::move(other.mem_);
+        WireExpiry();
+        return *this;
+    }
+
     void SetMaxMemory(size_t bytes) { mem_.SetLimit(bytes); }
     size_t UsedMemory() const { return mem_.Used(); }
     size_t MaxMemory() const { return mem_.Limit(); }
@@ -39,19 +53,21 @@ public:
     }
 
     bool Del(std::string_view key) {
-        const size_t bytes = ExistingBytes(key);
-        if (bytes == 0) {
+        const auto* var = storage_.Get(key);
+        if (var == nullptr) {
             return false;
         }
-        mem_.Sub(bytes);
+        mem_.Sub(std::visit([&](const auto& val) { return ValBytes(key, val); }, *var));
         return storage_.Del(key);
     }
 
     bool Exists(std::string_view key) { return storage_.Exists(key); }
 
     bool Expire(std::string_view key, std::chrono::seconds ttl) {
-        return storage_.Expire(key, std::chrono::steady_clock::now() + ttl);
+        return storage_.Expire(key, ttl);
     }
+
+    void AdvanceClock(std::chrono::steady_clock::duration d) { storage_.AdvanceClock(d); }
 
     int64_t TtlSeconds(std::string_view key) { return storage_.TtlSeconds(key); }
 
@@ -148,6 +164,12 @@ private:
     template <class T>
     size_t ValBytes(std::string_view key, const T& val) {
         return StringBytes(key) + SizeOf(val);
+    }
+
+    void WireExpiry() {
+        storage_.OnExpire([this](std::string_view key, const storage::ValueVar& v) {
+            mem_.Sub(std::visit([&](const auto& val) { return ValBytes(key, val); }, v));
+        });
     }
 
     size_t ExistingBytes(std::string_view key) {

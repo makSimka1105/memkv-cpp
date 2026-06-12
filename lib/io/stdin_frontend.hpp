@@ -9,8 +9,8 @@
 #include "engine/session_eval.hpp"
 #include "io/human.hpp"
 #include "io/reply.hpp"
-#include "lexer/lexer.hpp"
-#include "parser/parser.hpp"
+#include "command/lexer/lexer.hpp"
+#include "command/parser/parser.hpp"
 
 namespace valkey::io {
 

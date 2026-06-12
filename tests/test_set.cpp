@@ -17,31 +17,31 @@ static std::string Exec(engine::Engine& eng, std::string_view cmds) {
 
 TEST(SetTest, SaddDeduplication) {
     engine::Engine eng;
-    EXPECT_EQ(Exec(eng, "SADD s a b c"), "(int) 3\n");
-    EXPECT_EQ(Exec(eng, "SADD s a"), "(int) 0\n");
-    EXPECT_EQ(Exec(eng, "SADD s d"), "(int) 1\n");
-    EXPECT_EQ(Exec(eng, "SCARD s"), "(int) 4\n");
+    EXPECT_EQ(Exec(eng, "SADD s a b c"), "(integer) 3\n");
+    EXPECT_EQ(Exec(eng, "SADD s a"), "(integer) 0\n");
+    EXPECT_EQ(Exec(eng, "SADD s d"), "(integer) 1\n");
+    EXPECT_EQ(Exec(eng, "SCARD s"), "(integer) 4\n");
 }
 
 TEST(SetTest, SremExistingAndMissing) {
     engine::Engine eng;
     Exec(eng, "SADD s x y");
-    EXPECT_EQ(Exec(eng, "SREM s x"), "(int) 1\n");
-    EXPECT_EQ(Exec(eng, "SREM s x"), "(int) 0\n");
-    EXPECT_EQ(Exec(eng, "SREM nokey z"), "(int) 0\n");
+    EXPECT_EQ(Exec(eng, "SREM s x"), "(integer) 1\n");
+    EXPECT_EQ(Exec(eng, "SREM s x"), "(integer) 0\n");
+    EXPECT_EQ(Exec(eng, "SREM nokey z"), "(integer) 0\n");
 }
 
 TEST(SetTest, ScardEmpty) {
     engine::Engine eng;
-    EXPECT_EQ(Exec(eng, "SCARD nokey"), "(int) 0\n");
+    EXPECT_EQ(Exec(eng, "SCARD nokey"), "(integer) 0\n");
 }
 
 TEST(SetTest, SismemberHitAndMiss) {
     engine::Engine eng;
     Exec(eng, "SADD s hello");
-    EXPECT_EQ(Exec(eng, "SISMEMBER s hello"), "(int) 1\n");
-    EXPECT_EQ(Exec(eng, "SISMEMBER s world"), "(int) 0\n");
-    EXPECT_EQ(Exec(eng, "SISMEMBER nokey hello"), "(int) 0\n");
+    EXPECT_EQ(Exec(eng, "SISMEMBER s hello"), "(integer) 1\n");
+    EXPECT_EQ(Exec(eng, "SISMEMBER s world"), "(integer) 0\n");
+    EXPECT_EQ(Exec(eng, "SISMEMBER nokey hello"), "(integer) 0\n");
 }
 
 TEST(SetTest, SmembersEmpty) {
@@ -67,17 +67,17 @@ TEST(SetTest, SmoveMemberAcrossSets) {
     engine::Engine eng;
     Exec(eng, "SADD src a b");
     Exec(eng, "SADD dst c");
-    EXPECT_EQ(Exec(eng, "SMOVE src dst a"), "(int) 1\n");
-    EXPECT_EQ(Exec(eng, "SISMEMBER src a"), "(int) 0\n");
-    EXPECT_EQ(Exec(eng, "SISMEMBER dst a"), "(int) 1\n");
+    EXPECT_EQ(Exec(eng, "SMOVE src dst a"), "(integer) 1\n");
+    EXPECT_EQ(Exec(eng, "SISMEMBER src a"), "(integer) 0\n");
+    EXPECT_EQ(Exec(eng, "SISMEMBER dst a"), "(integer) 1\n");
 }
 
 TEST(SetTest, SmoveMissingMember) {
     engine::Engine eng;
     Exec(eng, "SADD src x");
-    EXPECT_EQ(Exec(eng, "SMOVE src dst z"), "(int) 0\n");
-    EXPECT_EQ(Exec(eng, "SMOVE nokey dst x"), "(int) 0\n");
-    EXPECT_EQ(Exec(eng, "SCARD dst"), "(int) 0\n");
+    EXPECT_EQ(Exec(eng, "SMOVE src dst z"), "(integer) 0\n");
+    EXPECT_EQ(Exec(eng, "SMOVE nokey dst x"), "(integer) 0\n");
+    EXPECT_EQ(Exec(eng, "SCARD dst"), "(integer) 0\n");
 }
 
 TEST(SetTest, SdiffBasic) {
@@ -99,11 +99,11 @@ TEST(SetTest, SunionBasic) {
     engine::Engine eng;
     Exec(eng, "SADD a alpha");
     Exec(eng, "SADD b beta");
-    EXPECT_EQ(Exec(eng, "SCARD a"), "(int) 1\n");
-    EXPECT_EQ(Exec(eng, "SCARD b"), "(int) 1\n");
-    EXPECT_EQ(Exec(eng, "SISMEMBER a alpha"), "(int) 1\n");
-    EXPECT_EQ(Exec(eng, "SISMEMBER b beta"), "(int) 1\n");
+    EXPECT_EQ(Exec(eng, "SCARD a"), "(integer) 1\n");
+    EXPECT_EQ(Exec(eng, "SCARD b"), "(integer) 1\n");
+    EXPECT_EQ(Exec(eng, "SISMEMBER a alpha"), "(integer) 1\n");
+    EXPECT_EQ(Exec(eng, "SISMEMBER b beta"), "(integer) 1\n");
     Exec(eng, "SADD union_result alpha beta");
-    EXPECT_EQ(Exec(eng, "SCARD union_result"), "(int) 2\n");
+    EXPECT_EQ(Exec(eng, "SCARD union_result"), "(integer) 2\n");
     EXPECT_EQ(Exec(eng, "SDIFF union_result a b"), "(empty array)\n");
 }

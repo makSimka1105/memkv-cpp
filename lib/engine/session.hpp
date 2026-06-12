@@ -2,7 +2,7 @@
 
 #include <vector>
 
-#include "parser/cmd.hpp"
+#include "command/parser/cmd.hpp"
 
 namespace valkey::engine {
 

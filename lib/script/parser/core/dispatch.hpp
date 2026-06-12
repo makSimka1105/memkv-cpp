@@ -13,7 +13,7 @@ namespace valkey::script {
 template <Dispatchable... Ts>
 struct ParseletSet {
     template <typename Out, typename Driver>
-    static std::optional<ParseResult<Out>> TryParse(TokenCursor& cursor, Driver& driver) {
+    static std::optional<ParseResult<Out>> TryParse(ScriptTokenCursor& cursor, Driver& driver) {
         std::optional<ParseResult<Out>> hit;
         MatchFirst<Ts...>([&]<size_t, typename T>() {
             if (!T::Matches(cursor.Peek())) {

@@ -15,7 +15,7 @@ struct KwExprParser {
         return kw && (kw->kw == TkKw::kTrue || kw->kw == TkKw::kFalse || kw->kw == TkKw::kNil);
     }
     template <typename Ep>
-    static ParseResult<Expr> Parse(TokenCursor& cursor, Ep&) {
+    static ParseResult<Expr> Parse(ScriptTokenCursor& cursor, Ep&) {
         auto keyword = std::get<TkKw>(cursor.Advance()).kw;
         if (keyword == TkKw::kNil) {
             return NilLit{};
