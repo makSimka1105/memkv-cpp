@@ -120,12 +120,11 @@ private:
     using Map = std::unordered_map<std::string, Entry, StringHash, std::equal_to<>>;
 
     Map::iterator FindLive(std::string_view key) {
-        const auto now = Now();
         auto it = map_.find(key);
         if (it == map_.end()) {
             return it;
         }
-        if (it->second.expires && *it->second.expires <= now) {
+        if (it->second.expires && *it->second.expires <= Now()) {
             EvictExpired(it);
             return map_.end();
         }

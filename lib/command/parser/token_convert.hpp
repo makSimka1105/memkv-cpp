@@ -20,7 +20,7 @@ namespace valkey::parser {
 CmdResult<std::string> TokenToString(const Token& tok, size_t) {
     return std::visit(
         Overload{
-            [](const TkWord& w) -> CmdResult<std::string> { return w.text; },
+            [](const TkWord& w) -> CmdResult<std::string> { return std::string(w.text); },
             [](const TkInt& i) -> CmdResult<std::string> {
                 return std::to_string(i.value);
             },

@@ -3,13 +3,14 @@
 #include <cstddef>
 #include <cstdint>
 #include <string>
+#include <string_view>
 #include <variant>
 
 namespace valkey::parser {
 
 struct TkEof {};
 struct TkWord {
-    std::string text;
+    std::string_view text;
 };
 struct TkInt {
     int64_t value;

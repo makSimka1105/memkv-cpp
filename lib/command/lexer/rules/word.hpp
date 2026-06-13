@@ -1,9 +1,7 @@
 #pragma once
 
 #include <optional>
-#include <string>
 #include <string_view>
-#include <utility>
 
 #include "cursor/char_cursor.hpp"
 #include "lex/engine.hpp"
@@ -19,9 +17,8 @@ struct WordRule {
         if (word.empty()) {
             return std::nullopt;
         }
-        std::string text(word);
         c.Advance(word.size());
-        return Token{TkWord{std::move(text)}};
+        return Token{TkWord{word}};
     }
 };
 
