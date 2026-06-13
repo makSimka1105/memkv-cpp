@@ -12,6 +12,10 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 option(VALKEY_TESTS "Build unit tests (downloads googletest)" OFF)
 
+if(CMAKE_CXX_FLAGS MATCHES "sanitize")
+    add_compile_options(-O0)
+endif()
+
 add_subdirectory(lib)
 add_subdirectory(bin)
 
