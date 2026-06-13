@@ -92,26 +92,26 @@ ValueResult LazyRule(const BinOp& node, EvalContext& ctx) {
     return IsTruthy(right);
 }
 
-constexpr std::array<BinaryRule, BinOp::kLast> BuildTable() {
-    std::array<BinaryRule, BinOp::kLast> table{};
-    table[BinOp::kAdd] = &StrictRule<Add>;
-    table[BinOp::kSub] = &StrictRule<Sub>;
-    table[BinOp::kMul] = &StrictRule<Mul>;
-    table[BinOp::kDiv] = &StrictRule<Divide>;
-    table[BinOp::kMod] = &StrictRule<Modulo>;
-    table[BinOp::kEq] = &StrictRule<Equal>;
-    table[BinOp::kNeq] = &StrictRule<NotEqual>;
-    table[BinOp::kLt] = &StrictRule<Less>;
-    table[BinOp::kLe] = &StrictRule<LessEqual>;
-    table[BinOp::kGt] = &StrictRule<Greater>;
-    table[BinOp::kGe] = &StrictRule<GreaterEqual>;
-    table[BinOp::kAnd] = &LazyRule<false>;
-    table[BinOp::kOr] = &LazyRule<true>;
+constexpr DispatchTable<BinaryRule, BinOp::kLast> BuildTable() {
+    DispatchTable<BinaryRule, BinOp::kLast> table{};
+    table.Set(BinOp::kAdd, &StrictRule<Add>);
+    table.Set(BinOp::kSub, &StrictRule<Sub>);
+    table.Set(BinOp::kMul, &StrictRule<Mul>);
+    table.Set(BinOp::kDiv, &StrictRule<Divide>);
+    table.Set(BinOp::kMod, &StrictRule<Modulo>);
+    table.Set(BinOp::kEq, &StrictRule<Equal>);
+    table.Set(BinOp::kNeq, &StrictRule<NotEqual>);
+    table.Set(BinOp::kLt, &StrictRule<Less>);
+    table.Set(BinOp::kLe, &StrictRule<LessEqual>);
+    table.Set(BinOp::kGt, &StrictRule<Greater>);
+    table.Set(BinOp::kGe, &StrictRule<GreaterEqual>);
+    table.Set(BinOp::kAnd, &LazyRule<false>);
+    table.Set(BinOp::kOr, &LazyRule<true>);
     return table;
 }
 
 constexpr auto kBinaryTable = BuildTable();
-static_assert(AllSet(kBinaryTable), "BinOp evaluator table incomplete");
+static_assert(kBinaryTable.Complete(), "BinOp evaluator table incomplete");
 
 }  // namespace bin_detail
 

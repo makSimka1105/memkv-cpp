@@ -33,15 +33,15 @@ ValueResult LogicalNot(const UnOp& node, EvalContext& ctx) {
     return !IsTruthy(operand);
 }
 
-constexpr std::array<UnaryRule, UnOp::kLast> BuildTable() {
-    std::array<UnaryRule, UnOp::kLast> table{};
-    table[UnOp::kNeg] = &Negate;
-    table[UnOp::kNot] = &LogicalNot;
+constexpr DispatchTable<UnaryRule, UnOp::kLast> BuildTable() {
+    DispatchTable<UnaryRule, UnOp::kLast> table{};
+    table.Set(UnOp::kNeg, &Negate);
+    table.Set(UnOp::kNot, &LogicalNot);
     return table;
 }
 
 constexpr auto kUnaryTable = BuildTable();
-static_assert(AllSet(kUnaryTable), "UnOp evaluator table incomplete");
+static_assert(kUnaryTable.Complete(), "UnOp evaluator table incomplete");
 
 }  // namespace un_detail
 

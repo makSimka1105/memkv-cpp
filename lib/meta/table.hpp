@@ -6,13 +6,27 @@
 namespace valkey {
 
 template <class T, size_t N>
-constexpr bool AllSet(const std::array<T, N>& table) {
-    for (const auto& entry : table) {
-        if (!entry) {
-            return false;
-        }
+class DispatchTable {
+ public:
+    constexpr void Set(size_t index, T value) {
+        values_[index] = value;
+        filled_[index] = true;
     }
-    return true;
-}
+
+    constexpr bool Complete() const {
+        for (bool filled : filled_) {
+            if (!filled) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    constexpr T operator[](size_t index) const { return values_[index]; }
+
+ private:
+    std::array<T, N> values_{};
+    std::array<bool, N> filled_{};
+};
 
 }  // namespace valkey
